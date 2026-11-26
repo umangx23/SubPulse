@@ -12,6 +12,10 @@ export type CurrencyCode = 'USD' | 'INR' | 'EUR' | 'GBP' | 'CAD';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
+export type SyncStatus = 'local' | 'syncing' | 'synced' | 'pending' | 'error';
+
+export type SyncResolutionStrategy = 'merge' | 'keep_cloud' | 'overwrite_cloud';
+
 export type AppView =
   | 'splash'
   | 'intro'
@@ -119,6 +123,17 @@ export interface AIAuditResponse {
   generatedAt: string;
 }
 
+export interface CloudSnapshot {
+  userId: string;
+  hasSettingsRow: boolean;
+  hasRemoteData: boolean;
+  settings: AppSettings | null;
+  subscriptions: Subscription[];
+  members: HouseholdMember[];
+  alerts: AlertItem[];
+  hasCompletedOnboarding: boolean;
+}
+
 export interface SubPulseStore {
   subscriptions: Subscription[];
   members: HouseholdMember[];
@@ -128,5 +143,7 @@ export interface SubPulseStore {
   isSignedIn: boolean;
   isGuestMode: boolean;
   cloudUserId?: string;
-  workspaceId?: string;
+  lastSyncedAt?: string;
+  hasPendingCloudSync?: boolean;
+  backupBannerDismissed?: boolean;
 }

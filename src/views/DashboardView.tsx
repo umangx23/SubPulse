@@ -23,12 +23,18 @@ import {
 
 interface DashboardViewProps {
   subscriptions: Subscription[];
+  memberCount: number;
   settings: AppSettings;
   isDark: boolean;
+  isGuestMode: boolean;
+  backupBannerDismissed?: boolean;
   unreadAlertsCount: number;
   isLoading: boolean;
   onToggleTheme: () => void;
   onNavigate: (view: AppView) => void;
+  onOpenSignIn: () => void;
+  onDismissBackupBanner: () => void;
+  onLoadDemo: () => void;
   onFilterPlans: (status: SubscriptionStatus | 'all') => void;
   onSelectSubscription: (id: string) => void;
   onAddNew: () => void;
@@ -37,12 +43,18 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   subscriptions,
+  memberCount,
   settings,
   isDark,
+  isGuestMode,
+  backupBannerDismissed = false,
   unreadAlertsCount,
   isLoading,
   onToggleTheme,
   onNavigate,
+  onOpenSignIn,
+  onDismissBackupBanner,
+  onLoadDemo,
   onFilterPlans,
   onSelectSubscription,
   onAddNew,
@@ -147,7 +159,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   if (subscriptions.length === 0) {
     return (
-      <div className="px-page-margin lg:p-gutter-xl pt-gutter-lg flex flex-col gap-gutter-xl flex-1">
+      <div className="px-page-margin lg:p-gutter-xl pt-gutter-lg flex flex-col gap-gutter-lg flex-1">
         <header className="flex items-center justify-between gap-gutter-md">
           <div>
             <h1 className="font-headline text-headline-lg-mobile lg:text-headline-lg text-light-on-surface dark:text-dark-on-surface">
@@ -155,9 +167,74 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </h1>
             <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant">
               {settings.workspaceName} · {settings.currency}
+              {isGuestMode ? ' · Guest Mode' : ''}
             </p>
           </div>
+          <div className="flex items-center gap-gutter-xs">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              aria-label="Toggle dark mode"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-md bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface"
+            >
+              <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                {isDark ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
+            {isGuestMode && (
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="min-h-[40px] px-3.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm inline-flex items-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  mail
+                </span>
+                <span>Sign in</span>
+              </button>
+            )}
+          </div>
         </header>
+
+        {isGuestMode && !backupBannerDismissed && (
+          <section
+            aria-label="Cloud backup prompt"
+            className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border border-light-outline-variant dark:border-dark-outline-variant p-gutter-md flex flex-col sm:flex-row sm:items-center justify-between gap-gutter-md shadow-[0_2px_12px_-2px_rgba(26,27,35,0.05)]"
+          >
+            <div className="flex items-start gap-gutter-sm min-w-0">
+              <div className="w-9 h-9 rounded-md bg-light-primary/12 dark:bg-dark-primary/15 text-light-primary dark:text-dark-primary flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
+                  cloud_sync
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="font-title text-title-sm text-light-on-surface dark:text-dark-on-surface">
+                  Using Guest Mode (saved on this device)
+                </span>
+                <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                  Sign in with email anytime to restore an existing cloud backup or sync new subscriptions.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="min-h-[38px] px-3.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm whitespace-nowrap"
+              >
+                Sign in &amp; sync
+              </button>
+              <button
+                type="button"
+                onClick={onDismissBackupBanner}
+                aria-label="Dismiss backup prompt"
+                className="w-8 h-8 rounded-md inline-flex items-center justify-center text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+              </button>
+            </div>
+          </section>
+        )}
 
         <section
           aria-label="Empty subscriptions state"
@@ -168,13 +245,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
-              No subscriptions yet
+              Start tracking your subscriptions
             </h2>
             <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant text-pretty">
-              Add your first recurring plan or import a CSV to see upcoming renewals and budget totals.
+              Add your first recurring plan, try the sample workspace, or sign in with email to restore your cloud backup.
             </p>
           </div>
-          <div className="flex items-center gap-gutter-sm">
+          <div className="flex flex-wrap items-center justify-center gap-gutter-sm">
             <button
               type="button"
               onClick={onAddNew}
@@ -184,11 +261,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => onNavigate('onboarding')}
-              className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm"
+              onClick={onLoadDemo}
+              className="inline-flex items-center justify-center min-h-[44px] px-4 py-2.5 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-label text-label-sm"
             >
-              Quick setup
+              Load sample demo
             </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-gutter-md pt-1">
+            <button
+              type="button"
+              onClick={() => onNavigate('onboarding')}
+              className="font-label text-label-sm text-light-primary dark:text-dark-primary hover:underline"
+            >
+              Quick setup wizard
+            </button>
+            {isGuestMode && (
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="font-label text-label-sm text-light-primary dark:text-dark-primary hover:underline"
+              >
+                Restore from email account
+              </button>
+            )}
           </div>
         </section>
       </div>
@@ -217,7 +312,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-gutter-sm">
+          <div className="flex items-center gap-gutter-xs">
+            {isGuestMode && (
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                aria-label="Sign in and back up local data"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest text-light-primary dark:text-dark-primary border border-light-outline-variant dark:border-dark-outline-variant transition-colors duration-state-change ease-state-change hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">cloud_upload</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onToggleTheme}
@@ -244,6 +350,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </header>
 
         <main className="px-page-margin flex flex-col gap-gutter-lg flex-1">
+          {/* Guest Backup Prompt Banner (Mobile) */}
+          {isGuestMode && !backupBannerDismissed && (
+            <section
+              aria-label="Back up local data"
+              className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border border-light-outline-variant dark:border-dark-outline-variant p-gutter-md flex flex-col gap-gutter-sm shadow-[0_2px_12px_-2px_rgba(26,27,35,0.05)]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <span className="material-symbols-outlined text-[20px] text-light-primary dark:text-dark-primary shrink-0 mt-0.5" aria-hidden="true">
+                    cloud_upload
+                  </span>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="font-title text-title-sm text-light-on-surface dark:text-dark-on-surface">
+                      Back up your {subscriptions.length} local {subscriptions.length === 1 ? 'plan' : 'plans'}
+                    </span>
+                    <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                      Guest Mode stores data only on this device. Sign in with email to sync to cloud.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onDismissBackupBanner}
+                  aria-label="Dismiss backup prompt"
+                  className="w-7 h-7 rounded-md inline-flex items-center justify-center text-light-on-surface-variant dark:text-dark-on-surface-variant shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">close</span>
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="w-full min-h-[40px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
+              >
+                Sign in &amp; back up data
+              </button>
+            </section>
+          )}
           {/* Split Metric Tiles: Spend + Budget */}
           <section aria-label="Spend and budget summary" className="grid grid-cols-2 gap-gutter-md items-stretch">
             {/* Tile 1: Monthly / Yearly Spend */}
@@ -620,6 +764,48 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
         </header>
+
+        {/* Guest Backup Prompt Banner (Desktop) */}
+        {isGuestMode && !backupBannerDismissed && (
+          <section
+            aria-label="Back up local data"
+            className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border border-light-outline-variant dark:border-dark-outline-variant px-gutter-lg py-gutter-md flex items-center justify-between gap-gutter-lg shadow-[0_2px_12px_-2px_rgba(26,27,35,0.05)]"
+          >
+            <div className="flex items-center gap-gutter-md min-w-0">
+              <div className="w-10 h-10 rounded-lg bg-light-primary/12 dark:bg-dark-primary/15 text-light-primary dark:text-dark-primary flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                  cloud_upload
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="font-title text-title-sm text-light-on-surface dark:text-dark-on-surface">
+                  Guest Mode · {subscriptions.length} {subscriptions.length === 1 ? 'subscription' : 'subscriptions'}
+                  {memberCount > 0 ? ` and ${memberCount} household ${memberCount === 1 ? 'member' : 'members'}` : ''} saved locally
+                </span>
+                <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                  Sign in with your email to back up your local data to Supabase or merge with an existing account.
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-gutter-xs shrink-0">
+              <button
+                type="button"
+                onClick={onOpenSignIn}
+                className="min-h-[40px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm whitespace-nowrap"
+              >
+                Sign in &amp; back up
+              </button>
+              <button
+                type="button"
+                onClick={onDismissBackupBanner}
+                aria-label="Dismiss backup prompt"
+                className="w-9 h-9 rounded-md inline-flex items-center justify-center text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low"
+              >
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* 3-Up KPI Summary Row */}
         <section aria-label="Spend and budget metrics" className="grid grid-cols-3 gap-gutter-lg items-stretch">

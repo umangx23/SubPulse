@@ -21,7 +21,9 @@ const isIndiaLocale =
 export const INITIAL_STORE: SubPulseStore = {
   hasCompletedOnboarding: false,
   isSignedIn: false,
-  isGuestMode: false,
+  isGuestMode: true,
+  backupBannerDismissed: false,
+  hasPendingCloudSync: false,
   settings: {
     workspaceName: 'Personal',
     userName: 'Guest',
@@ -64,8 +66,10 @@ export const INITIAL_STORE: SubPulseStore = {
 
 export const DEMO_STORE: SubPulseStore = {
   hasCompletedOnboarding: true,
-  isSignedIn: true,
-  isGuestMode: false,
+  isSignedIn: false,
+  isGuestMode: true,
+  backupBannerDismissed: false,
+  hasPendingCloudSync: false,
   settings: {
     workspaceName: 'Alex & Sam',
     userName: 'Alex Morgan',

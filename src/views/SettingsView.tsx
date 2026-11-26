@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { PWAInstallButton } from '../components/PWAInstallButton';
 import { REFERENCE_TODAY } from '../data/seedData';
+import { formatCloudError, requestPasswordReset } from '../lib/cloudSync';
 import { downloadFile, generateICSFeed, subscriptionsToCSV } from '../lib/formatters';
-import { AppSettings, AppView, CurrencyCode, Subscription, ThemeMode } from '../types/subpulse';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { AppSettings, AppView, CurrencyCode, Subscription, SyncStatus, ThemeMode } from '../types/subpulse';
 
 interface SettingsViewProps {
   settings: AppSettings;
   subscriptions: Subscription[];
   memberCount: number;
-  isCloudSynced?: boolean;
-  onSyncNow?: () => void;
+  isGuestMode: boolean;
+  syncStatus: SyncStatus;
+  syncError: string | null;
+  lastSyncedAt?: string;
+  onOpenSignIn: (mode?: 'signin' | 'signup') => void;
+  onSyncNow: () => void;
   onNavigate: (view: AppView) => void;
   onUpdateSettings: (patch: Partial<AppSettings>) => void;
-  onLogOut: () => void;
+  onLogOut: (clearLocalData: boolean) => void;
   onResetAllData: () => void;
   onShowToast: (msg: string) => void;
 }
@@ -21,7 +27,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   settings,
   subscriptions,
   memberCount,
-  isCloudSynced = false,
+  isGuestMode,
+  syncStatus,
+  syncError,
+  lastSyncedAt,
+  onOpenSignIn,
   onSyncNow,
   onNavigate,
   onUpdateSettings,
@@ -29,14 +39,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onResetAllData,
   onShowToast,
 }) => {
-  const [showTotpModal, setShowTotpModal] = useState(false);
-  const [showAccountsModal, setShowAccountsModal] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingQuietHours, setEditingQuietHours] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const [apiKeyDraft, setApiKeyDraft] = useState(settings.geminiApiKey || '');
   const [showApiKey, setShowApiKey] = useState(false);
   const [isTestingKey, setIsTestingKey] = useState(false);
   const [keyTestStatus, setKeyTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const isCloudSignedIn = !isGuestMode;
+
+  const formattedLastSynced = lastSyncedAt
+    ? new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
+
+  const syncStatusLabel = (() => {
+    if (isGuestMode) return 'Guest mode · Saved on this device';
+    if (syncStatus === 'syncing') return 'Syncing with cloud…';
+    if (syncStatus === 'pending') return 'Changes waiting to sync';
+    if (syncStatus === 'error') return 'Sync paused · Local data is safe';
+    return formattedLastSynced ? `Backed up · Last synced ${formattedLastSynced}` : 'Backed up to your account';
+  })();
+
+  const handleSendPasswordReset = async () => {
+    if (!settings.userEmail || !isSupabaseConfigured) return;
+    setIsSendingReset(true);
+    try {
+      await requestPasswordReset(settings.userEmail);
+      onShowToast(`Password reset link sent to ${settings.userEmail}`);
+    } catch (err) {
+      onShowToast(formatCloudError(err));
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
 
   const handleSaveApiKey = () => {
     const trimmed = apiKeyDraft.trim();
@@ -108,17 +145,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               Settings
             </span>
             <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-              {isCloudSynced ? 'Supabase Cloud · Synced' : 'IndexedDB · Local-only'}
+              {syncStatusLabel}
             </span>
           </div>
         </div>
-        {isCloudSynced && onSyncNow && (
+        {isCloudSignedIn ? (
           <button
             type="button"
+            disabled={syncStatus === 'syncing'}
             onClick={onSyncNow}
-            className="min-h-[36px] px-3 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm"
+            className="min-h-[36px] px-3 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm disabled:opacity-60"
           >
-            Sync
+            {syncStatus === 'syncing' ? 'Syncing…' : 'Sync'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenSignIn('signin')}
+            className="min-h-[36px] px-3 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
+          >
+            Sign in
           </button>
         )}
       </header>
@@ -127,43 +173,176 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <header className="hidden lg:flex px-gutter-xl pt-gutter-xl pb-gutter-md items-center justify-between gap-gutter-md">
         <div>
           <h1 className="font-headline text-headline-lg text-light-on-surface dark:text-dark-on-surface">
-            Settings &amp; security
+            Settings &amp; backup
           </h1>
           <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant">
-            {isCloudSynced
-              ? 'Supabase cloud sync active · Cross-device backup enabled'
-              : 'Local-only IndexedDB mode · Sign in to enable cloud sync'}
+            {syncStatusLabel}
           </p>
         </div>
-        {isCloudSynced && onSyncNow && (
+        {isCloudSignedIn ? (
           <button
             type="button"
+            disabled={syncStatus === 'syncing'}
             onClick={onSyncNow}
-            className="sp-btn min-h-[40px] px-4 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm inline-flex items-center gap-1.5"
+            className="sp-btn min-h-[40px] px-4 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm inline-flex items-center gap-1.5 disabled:opacity-60"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">sync</span>
-            <span>Sync now</span>
+            <span>{syncStatus === 'syncing' ? 'Syncing…' : 'Sync now'}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenSignIn('signin')}
+            className="sp-btn min-h-[40px] px-4 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm inline-flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">cloud_upload</span>
+            <span>Sign in &amp; back up</span>
           </button>
         )}
       </header>
 
       <main className="px-page-margin lg:px-gutter-xl flex flex-col gap-gutter-lg flex-1 max-w-2xl lg:max-w-3xl w-full mx-auto lg:mx-0">
-        {/* Profile & Household Block */}
+        {/* Cloud Account & Email Backup Section */}
+        <section
+          aria-label="Account and cloud backup"
+          className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md"
+        >
+          <div className="flex items-start justify-between gap-gutter-md">
+            <div className="flex items-center gap-gutter-md min-w-0">
+              <div className="w-12 h-12 rounded-full bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary flex items-center justify-center font-headline text-title-md shrink-0">
+                {isGuestMode ? (
+                  <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                    person_outline
+                  </span>
+                ) : (
+                  settings.userInitials
+                )}
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface truncate">
+                  {isGuestMode ? 'Guest Mode (Local only)' : settings.userName}
+                </h2>
+                <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant truncate">
+                  {isGuestMode
+                    ? `${subscriptions.length} ${subscriptions.length === 1 ? 'subscription' : 'subscriptions'} & ${memberCount} ${memberCount === 1 ? 'member' : 'members'} stored on this device`
+                    : settings.userEmail}
+                </p>
+              </div>
+            </div>
+            <span
+              className={`font-label text-label-sm shrink-0 ${
+                isGuestMode
+                  ? 'text-light-on-surface-variant dark:text-dark-on-surface-variant'
+                  : syncStatus === 'error'
+                  ? 'text-light-error dark:text-dark-error'
+                  : syncStatus === 'pending' || syncStatus === 'syncing'
+                  ? 'text-warning'
+                  : 'text-success dark:text-success-container'
+              }`}
+            >
+              {isGuestMode
+                ? 'Not backed up'
+                : syncStatus === 'syncing'
+                ? 'Syncing…'
+                : syncStatus === 'pending'
+                ? 'Pending'
+                : syncStatus === 'error'
+                ? 'Sync error'
+                : 'Synced'}
+            </span>
+          </div>
+
+          {syncError && isCloudSignedIn && (
+            <div
+              role="alert"
+              className="rounded-lg bg-light-error-container/50 dark:bg-dark-error-container/40 px-3.5 py-2.5 flex items-center justify-between gap-gutter-sm"
+            >
+              <p className="font-body text-body-sm text-light-on-error-container dark:text-dark-on-error-container">
+                {syncError}
+              </p>
+              <button
+                type="button"
+                onClick={onSyncNow}
+                className="font-label text-label-sm text-light-on-error-container dark:text-dark-on-error-container underline shrink-0"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {isGuestMode ? (
+            <div className="flex flex-col gap-gutter-sm pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant">
+              <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                Sign in with your email to back up your local data to Supabase and sync across devices. If you already have a cloud backup, you can merge or restore it.
+              </p>
+              <div className="flex flex-wrap items-center gap-gutter-sm">
+                <button
+                  type="button"
+                  onClick={() => onOpenSignIn('signin')}
+                  className="min-h-[44px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm inline-flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">mail</span>
+                  <span>Sign in with email</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenSignIn('signup')}
+                  className="min-h-[44px] px-4 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-label text-label-sm"
+                >
+                  Create account &amp; back up
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-gutter-sm pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant">
+              <div className="flex flex-wrap items-center gap-gutter-sm">
+                <button
+                  type="button"
+                  disabled={syncStatus === 'syncing'}
+                  onClick={onSyncNow}
+                  className="min-h-[42px] px-3.5 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-primary dark:text-dark-primary font-label text-label-sm inline-flex items-center gap-1.5 disabled:opacity-60"
+                >
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">sync</span>
+                  <span>{syncStatus === 'syncing' ? 'Syncing…' : 'Back up & sync now'}</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isSendingReset || !isSupabaseConfigured}
+                  onClick={handleSendPasswordReset}
+                  className="min-h-[42px] px-3.5 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-label text-label-sm disabled:opacity-60"
+                >
+                  {isSendingReset ? 'Sending reset link…' : 'Send password reset email'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSignOutModal(true)}
+                  className="min-h-[42px] px-3.5 py-2 rounded-md text-light-error dark:text-dark-error font-label text-label-sm hover:underline"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Household & Shared Splits Link */}
         <button
           type="button"
           onClick={() => onNavigate('household')}
           className="w-full text-left rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex items-center justify-between gap-gutter-md hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low transition-colors"
         >
           <div className="flex items-center gap-gutter-md">
-            <div className="w-12 h-12 rounded-full bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary flex items-center justify-center font-headline text-title-md shrink-0">
-              {settings.userInitials}
+            <div className="w-11 h-11 rounded-lg bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                group
+              </span>
             </div>
             <div className="flex flex-col gap-0.5">
               <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
-                {settings.userName}
+                Household: {settings.workspaceName}
               </h2>
               <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                Household: {settings.workspaceName} ({memberCount} members)
+                {memberCount} {memberCount === 1 ? 'member' : 'members'} · Manage shared subscription splits
               </p>
             </div>
           </div>
@@ -171,79 +350,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             chevron_right
           </span>
         </button>
-
-        {/* Security & Authentication */}
-        <section
-          aria-label="Security and authentication"
-          className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md"
-        >
-          <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
-            Security &amp; sign-in
-          </h2>
-
-          <div className="flex items-center justify-between gap-gutter-md">
-            <div className="flex flex-col">
-              <span className="font-body text-body-md text-light-on-surface dark:text-dark-on-surface">
-                Face ID / Passkey lock
-              </span>
-              <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                Require biometric on reopen
-              </span>
-            </div>
-            <input
-              type="checkbox"
-              checked={settings.passkeyLockEnabled}
-              onChange={(e) => {
-                onUpdateSettings({ passkeyLockEnabled: e.target.checked });
-                onShowToast(e.target.checked ? 'Passkey lock enabled' : 'Passkey lock disabled');
-              }}
-              aria-label="Require Face ID or Passkey on reopen"
-              className="w-6 h-6 rounded-sm text-light-primary focus:ring-light-primary border-light-outline-variant"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowTotpModal(true)}
-            className="w-full text-left flex items-center justify-between gap-gutter-md pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant"
-          >
-            <div className="flex flex-col">
-              <span className="font-body text-body-md text-light-on-surface dark:text-dark-on-surface">
-                Two-factor auth (TOTP)
-              </span>
-              <span
-                className={`font-body text-body-sm ${
-                  settings.totpEnabled
-                    ? 'text-success dark:text-success-container'
-                    : 'text-light-on-surface-variant dark:text-dark-on-surface-variant'
-                }`}
-              >
-                {settings.totpEnabled ? 'Enabled · Authenticator app' : 'Not configured'}
-              </span>
-            </div>
-            <span className="material-symbols-outlined text-[20px] text-light-on-surface-variant dark:text-dark-on-surface-variant" aria-hidden="true">
-              chevron_right
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowAccountsModal(true)}
-            className="w-full text-left flex items-center justify-between gap-gutter-md pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant"
-          >
-            <div className="flex flex-col">
-              <span className="font-body text-body-md text-light-on-surface dark:text-dark-on-surface">
-                Connected accounts
-              </span>
-              <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                Sign in with Apple, Google
-              </span>
-            </div>
-            <span className="material-symbols-outlined text-[20px] text-light-on-surface-variant dark:text-dark-on-surface-variant" aria-hidden="true">
-              chevron_right
-            </span>
-          </button>
-        </section>
 
         {/* Preferences & Appearance */}
         <section
@@ -363,16 +469,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         >
           <div className="flex items-center justify-between gap-gutter-md">
             <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
-                  Optional AI features (BYOK)
-                </h2>
-                <span className="px-2 py-0.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface-variant dark:text-dark-on-surface-variant font-label text-label-sm">
-                  Optional
-                </span>
-              </div>
+              <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
+                Optional AI features (BYOK)
+              </h2>
               <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                Bring your own Gemini API key for AI savings audits. Local audits always work without AI.
+                Bring your own Gemini API key for AI savings audits. Stored strictly on this device and never uploaded to cloud backup.
               </span>
             </div>
             <input
@@ -459,10 +560,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   {keyTestStatus.message}
                 </p>
               )}
-
-              <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                Stored locally in IndexedDB on this device and sent only when you run an AI audit.
-              </p>
             </div>
           )}
         </section>
@@ -512,10 +609,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="grid grid-cols-2 gap-gutter-sm pt-1">
             <button
               type="button"
-              onClick={() => onNavigate('intro')}
+              onClick={() => onNavigate('onboarding')}
               className="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm"
             >
-              Replay intro &amp; setup
+              Quick setup wizard
             </button>
             <button
               type="button"
@@ -528,97 +625,79 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </section>
 
         {/* Isolated Destructive Actions */}
-        <section aria-label="Account termination" className="flex flex-col gap-gutter-sm pt-gutter-sm pb-6">
-          <button
-            type="button"
-            onClick={onLogOut}
-            className="w-full min-h-[44px] px-4 py-2.5 rounded-md bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-lg hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low"
-          >
-            Log out of all devices
-          </button>
+        <section aria-label="Local data reset" className="flex flex-col gap-gutter-sm pt-gutter-sm pb-6">
           <button
             type="button"
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full min-h-[44px] px-4 py-2.5 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-lg hover:opacity-90"
           >
-            Reset application &amp; clear all data
+            Reset local app &amp; clear device data
           </button>
         </section>
       </main>
 
-      {/* TOTP Modal */}
-      {showTotpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      {/* Sign-Out Choice Modal */}
+      {showSignOutModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sign-out-title"
+        >
           <div className="w-full max-w-sm rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-xl flex flex-col gap-gutter-md border border-light-outline-variant dark:border-dark-outline-variant">
-            <h3 className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
-              Two-factor auth (TOTP)
+            <h3 id="sign-out-title" className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
+              Sign out of {settings.userEmail}?
             </h3>
             <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-              {settings.totpEnabled
-                ? 'Authenticator app protection is active for household exports and destructive actions.'
-                : 'Enable TOTP authenticator verification for account security.'}
+              Your cloud backup remains safely stored in Supabase. Choose what to do with the data on this device:
             </p>
-            <div className="flex items-center justify-end gap-gutter-sm">
+            <div className="flex flex-col gap-gutter-sm">
               <button
                 type="button"
                 onClick={() => {
-                  onUpdateSettings({ totpEnabled: !settings.totpEnabled });
-                  setShowTotpModal(false);
-                  onShowToast(settings.totpEnabled ? 'TOTP disabled' : 'TOTP enabled');
+                  setShowSignOutModal(false);
+                  onLogOut(false);
                 }}
-                className="min-h-[44px] px-4 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low font-label text-label-sm"
+                className="w-full min-h-[44px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
               >
-                {settings.totpEnabled ? 'Disable' : 'Enable'}
+                Sign out &amp; keep local copy (Guest Mode)
               </button>
               <button
                 type="button"
-                onClick={() => setShowTotpModal(false)}
-                className="min-h-[44px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
+                onClick={() => {
+                  setShowSignOutModal(false);
+                  onLogOut(true);
+                }}
+                className="w-full min-h-[44px] px-4 py-2 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-sm"
               >
-                Done
+                Sign out &amp; clear this device
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSignOutModal(false)}
+                className="w-full min-h-[40px] px-4 py-2 rounded-md border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm"
+              >
+                Cancel
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Connected Accounts Modal */}
-      {showAccountsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-xl flex flex-col gap-gutter-md border border-light-outline-variant dark:border-dark-outline-variant">
-            <h3 className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
-              Connected accounts
-            </h3>
-            <div className="flex flex-col gap-gutter-sm">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-light-surface-container-low dark:bg-dark-surface-container-low">
-                <span className="font-body text-body-md">Apple ID</span>
-                <span className="font-label text-label-sm text-success">Connected</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-light-surface-container-low dark:bg-dark-surface-container-low">
-                <span className="font-body text-body-md">Google ({settings.userEmail})</span>
-                <span className="font-label text-label-sm text-success">Connected</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowAccountsModal(false)}
-              className="min-h-[44px] w-full rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
-            >
-              Close
-            </button>
           </div>
         </div>
       )}
 
       {/* Reset Application Confirmation */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="reset-app-title">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-app-title"
+        >
           <div className="w-full max-w-sm rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-xl flex flex-col gap-gutter-md border border-light-outline-variant dark:border-dark-outline-variant">
             <h3 id="reset-app-title" className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
-              Reset application?
+              Reset local application?
             </h3>
             <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-              This removes all subscriptions, household splits, preferences, and your local Gemini API key from this device, and returns the app to its initial setup flow.
+              This signs out on this device and removes all local subscriptions, household splits, preferences, and your local Gemini API key from IndexedDB. Any data already backed up to Supabase stays safe in your account.
             </p>
             <div className="flex items-center justify-end gap-gutter-sm">
               <button
@@ -636,7 +715,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className="min-h-[44px] px-4 py-2 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-sm"
               >
-                Reset app
+                Reset device
               </button>
             </div>
           </div>

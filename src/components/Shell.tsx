@@ -1,14 +1,17 @@
 import React from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { SPRING_SNAPPY, triggerHaptic } from '../lib/haptics';
-import { AppSettings, AppView } from '../types/subpulse';
+import { AppSettings, AppView, SyncStatus } from '../types/subpulse';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface ShellProps {
   currentView: AppView;
   onNavigate: (view: AppView) => void;
   onAddNew: () => void;
+  onOpenSignIn: () => void;
   settings: AppSettings;
+  isGuestMode: boolean;
+  syncStatus: SyncStatus;
   unreadAlertsCount: number;
   isOffline: boolean;
   onRetryConnection: () => void;
@@ -38,7 +41,10 @@ export const Shell: React.FC<ShellProps> = ({
   currentView,
   onNavigate,
   onAddNew,
+  onOpenSignIn,
   settings,
+  isGuestMode,
+  syncStatus,
   unreadAlertsCount,
   isOffline,
   onRetryConnection,
@@ -145,6 +151,72 @@ export const Shell: React.FC<ShellProps> = ({
         </div>
 
         <div className="flex flex-col gap-gutter-sm">
+          {/* Account & Cloud Backup Card */}
+          {isGuestMode ? (
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(8);
+                onOpenSignIn();
+              }}
+              className="w-full text-left rounded-lg bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant p-3 flex items-center justify-between gap-2 hover:bg-light-surface-container dark:hover:bg-dark-surface-container transition-colors"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-md bg-light-primary/12 dark:bg-dark-primary/15 text-light-primary dark:text-dark-primary flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                    cloud_upload
+                  </span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-label text-label-sm text-light-on-surface dark:text-dark-on-surface truncate">
+                    Guest · Local only
+                  </span>
+                  <span className="font-body text-[11px] text-light-primary dark:text-dark-primary truncate">
+                    Sign in to back up
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-[16px] text-light-on-surface-variant dark:text-dark-on-surface-variant shrink-0" aria-hidden="true">
+                chevron_right
+              </span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(8);
+                onNavigate('settings');
+              }}
+              className="w-full text-left rounded-lg bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant p-3 flex items-center gap-2.5 hover:bg-light-surface-container dark:hover:bg-dark-surface-container transition-colors"
+            >
+              <div className="w-8 h-8 rounded-full bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary flex items-center justify-center font-label text-label-sm shrink-0">
+                {settings.userInitials}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-label text-label-sm text-light-on-surface dark:text-dark-on-surface truncate">
+                  {settings.userEmail || settings.userName}
+                </span>
+                <span
+                  className={`font-body text-[11px] truncate ${
+                    syncStatus === 'error'
+                      ? 'text-light-error dark:text-dark-error'
+                      : syncStatus === 'pending' || syncStatus === 'syncing'
+                      ? 'text-warning'
+                      : 'text-success dark:text-success-container'
+                  }`}
+                >
+                  {syncStatus === 'syncing'
+                    ? 'Syncing…'
+                    : syncStatus === 'pending'
+                    ? 'Pending sync'
+                    : syncStatus === 'error'
+                    ? 'Sync paused'
+                    : 'Backed up'}
+                </span>
+              </div>
+            </button>
+          )}
+
           <PWAInstallButton />
           <motion.button
             type="button"
