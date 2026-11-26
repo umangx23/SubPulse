@@ -222,6 +222,33 @@ export async function signOutCloud() {
   if (error) throw error;
 }
 
+/**
+ * Deterministically converts any string ID (e.g. "sub-1795692742023") into a valid UUID
+ * so Supabase `uuid` columns accept both legacy local IDs and native UUIDs without syntax errors.
+ */
+function toUuid(rawId: string): string {
+  if (UUID_REGEX.test(rawId)) return rawId.toLowerCase();
+
+  let h1 = 0x811c9dc5;
+  let h2 = 0x9e3779b9;
+  let h3 = 0x85ebca6b;
+  let h4 = 0xc2b2ae35;
+  for (let i = 0; i < rawId.length; i++) {
+    const ch = rawId.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ (ch + i), 0x85ebca6b) >>> 0;
+    h3 = Math.imul(h3 ^ (ch * 31), 0xc2b2ae35) >>> 0;
+    h4 = Math.imul(h4 ^ (ch + (i << 3)), 0x27d4eb2f) >>> 0;
+  }
+
+  const p1 = h1.toString(16).padStart(8, '0');
+  const p2 = (h2 >>> 16).toString(16).padStart(4, '0');
+  const p3 = ((h2 & 0x0fff) | 0x4000).toString(16).padStart(4, '0');
+  const p4 = ((h3 >>> 16 & 0x3fff) | 0x8000).toString(16).padStart(4, '0');
+  const p5 = (h3 & 0xffff).toString(16).padStart(4, '0') + h4.toString(16).padStart(8, '0');
+  return `${p1}-${p2}-${p3}-${p4}-${p5}`;
+}
+
 // ---------------------------------------------------------------------------
 // Row Mappers
 // ---------------------------------------------------------------------------
@@ -285,7 +312,7 @@ function toV2SubscriptionRecord(userId: string, sub: Subscription) {
 
 function toLegacySubscriptionRecord(workspaceId: string, userId: string, sub: Subscription) {
   return {
-    id: sub.id,
+    id: toUuid(sub.id),
     workspace_id: workspaceId,
     created_by: userId,
     name: sub.name,
@@ -390,12 +417,13 @@ function toV2AlertRecord(userId: string, alert: AlertItem) {
 }
 
 function toLegacyAlertRecord(userId: string, alert: AlertItem, validSubIds?: Set<string>) {
+  const mappedSubId = alert.subscriptionId ? toUuid(alert.subscriptionId) : null;
   const safeSubId =
-    alert.subscriptionId && (!validSubIds || validSubIds.has(alert.subscriptionId))
-      ? alert.subscriptionId
+    mappedSubId && (!validSubIds || validSubIds.has(mappedSubId) || (alert.subscriptionId && validSubIds.has(alert.subscriptionId)))
+      ? mappedSubId
       : null;
   return {
-    id: alert.id,
+    id: toUuid(alert.id),
     user_id: userId,
     subscription_id: safeSubId,
     title: alert.title,
@@ -836,7 +864,7 @@ export async function syncSubscriptionArchive(userId: string, subId: string): Pr
     .from('subscriptions')
     .update({ archived_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq('workspace_id', workspaceId)
-    .eq('id', subId);
+    .eq('id', toUuid(subId));
   if (error) throw error;
 }
 

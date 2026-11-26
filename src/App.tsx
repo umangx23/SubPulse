@@ -701,7 +701,10 @@ export default function App() {
   const handleImportSubscriptions = useCallback(
     (items: Partial<Subscription>[]) => {
       const created: Subscription[] = items.map((item, idx) => ({
-        id: `sub-imp-${Date.now()}-${idx}`,
+        id:
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `sub-imp-${Date.now()}-${idx}`,
         name: item.name || 'Imported Plan',
         initials: computeInitials(item.name || 'Imported Plan'),
         avatarBg: 'bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary',

@@ -57,7 +57,11 @@ export const EditSubscriptionView: React.FC<EditSubscriptionViewProps> = ({
     const membersList = isShared ? defaultMembers.slice(0, effectiveSplit) : ['Alex (You)'];
 
     const payload: Subscription = {
-      id: existing?.id || `sub-${Date.now()}`,
+      id:
+        existing?.id ||
+        (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `sub-${Date.now()}`),
       name: name.trim(),
       initials: existing?.initials || computeInitials(name),
       avatarBg: existing?.avatarBg || AVATAR_COLORS[name.length % AVATAR_COLORS.length],
