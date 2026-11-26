@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Shell } from './components/Shell';
-import { INITIAL_STORE } from './data/seedData';
+import { DEMO_STORE, INITIAL_STORE } from './data/seedData';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { clearSubPulseStore, loadSubPulseStore, saveSubPulseStore } from './lib/db';
 import { computeInitials } from './lib/formatters';
@@ -16,11 +16,13 @@ import { AnalyticsView } from './views/AnalyticsView';
 import { DashboardView } from './views/DashboardView';
 import { EditSubscriptionView } from './views/EditSubscriptionView';
 import { HouseholdView } from './views/HouseholdView';
+import { IntroView } from './views/IntroView';
 import { NotificationsView } from './views/NotificationsView';
-import { OnboardingView } from './views/OnboardingView';
+import { OnboardingView, SetupCompletionPayload } from './views/OnboardingView';
 import { SavingsAuditView } from './views/SavingsAuditView';
 import { SettingsView } from './views/SettingsView';
 import { SignInView } from './views/SignInView';
+import { SplashView } from './views/SplashView';
 import { SubscriptionDetailView } from './views/SubscriptionDetailView';
 import { SubscriptionsView } from './views/SubscriptionsView';
 import { SystemStatesView } from './views/SystemStatesView';
@@ -28,7 +30,7 @@ import { SystemStatesView } from './views/SystemStatesView';
 export default function App() {
   const [store, setStore] = useState<SubPulseStore>(() => structuredClone(INITIAL_STORE));
   const [isHydrating, setIsHydrating] = useState(true);
-  const [currentView, setCurrentView] = useState<AppView>('dashboard');
+  const [currentView, setCurrentView] = useState<AppView>('splash');
   const [previousView, setPreviousView] = useState<AppView>('dashboard');
   const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
   const [editingSubId, setEditingSubId] = useState<string | null>(null);
@@ -47,9 +49,6 @@ export default function App() {
       if (active) {
         setStore(loaded);
         setIsHydrating(false);
-        if (!loaded.isSignedIn) {
-          setCurrentView('signin');
-        }
       }
     });
     return () => {
@@ -293,33 +292,125 @@ export default function App() {
 
   const handleResetAllData = useCallback(async () => {
     await clearSubPulseStore();
-    setStore((prev) => ({
-      ...prev,
-      subscriptions: [],
-      alerts: [],
-      settings: { ...prev.settings, savedYtd: 0, cancelledCountYtd: 0 },
-    }));
-    setCurrentView('dashboard');
-    showToast('Cleared all subscriptions from IndexedDB', () => {
-      setStore(structuredClone(INITIAL_STORE));
-    });
+    setStore(structuredClone(INITIAL_STORE));
+    setSelectedSubId(null);
+    setEditingSubId(null);
+    setCurrentView('splash');
+    showToast('Reset all data · Starting fresh');
   }, [showToast]);
+
+  const handleLoadSampleDemo = useCallback(() => {
+    setStore(structuredClone(DEMO_STORE));
+    setCurrentView('dashboard');
+    showToast('Loaded sample demo workspace');
+  }, [showToast]);
+
+  const handleCompleteSetup = useCallback(
+    (payload: SetupCompletionPayload) => {
+      setStore((prev) => {
+        const existingNames = new Set(prev.subscriptions.map((s) => s.name.toLowerCase()));
+        const additions: Subscription[] = [];
+        payload.selectedServices.forEach((svc, idx) => {
+          const matched = Array.from(existingNames).some((n) => n.includes(svc.name.toLowerCase()));
+          if (!matched) {
+            additions.push({
+              id: `sub-setup-${Date.now()}-${idx}`,
+              name: svc.name,
+              initials: computeInitials(svc.name),
+              avatarBg: 'bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary',
+              category: svc.category,
+              price: svc.price,
+              currency: payload.currency,
+              cycle: 'monthly',
+              status: 'active',
+              nextBillingDate: '2026-12-05',
+              reminderDays: 3,
+              startedOn: '2026-11-26',
+              paymentMethod: 'Apple Pay · ••4821',
+              isShared: false,
+              splitCount: 1,
+              sharedMembers: [payload.userName],
+              manageUrl: 'https://',
+              notes: 'Added during initial setup',
+            });
+          }
+        });
+
+        return {
+          ...prev,
+          hasCompletedOnboarding: true,
+          settings: {
+            ...prev.settings,
+            userName: payload.userName,
+            userInitials: computeInitials(payload.userName),
+            workspaceName: payload.workspaceName,
+            currency: payload.currency,
+            country: payload.country,
+            timezone: payload.timezone,
+            monthlyBudgetCap: payload.monthlyBudgetCap,
+            webPushEnabled: payload.webPushEnabled,
+            emailFallbackEnabled: payload.emailFallbackEnabled,
+          },
+          subscriptions: [...additions, ...prev.subscriptions],
+        };
+      });
+
+      setCurrentView(store.isSignedIn ? 'dashboard' : 'signin');
+      showToast(
+        payload.selectedServices.length > 0
+          ? `Setup saved with ${payload.selectedServices.length} ${
+              payload.selectedServices.length === 1 ? 'service' : 'services'
+            }`
+          : 'Setup preferences saved'
+      );
+    },
+    [store.isSignedIn, showToast]
+  );
 
   const unreadAlertsCount = useMemo(
     () => store.alerts.filter((a) => !a.read).length,
     [store.alerts]
   );
 
-  // Full-screen standalone flows (Sign In & Onboarding)
+  // Full-screen standalone flows (Splash, Intro, Setup, Sign In)
+  if (currentView === 'splash') {
+    return (
+      <SplashView
+        isHydrating={isHydrating}
+        onComplete={() => {
+          if (!store.hasCompletedOnboarding) {
+            setCurrentView('intro');
+          } else if (!store.isSignedIn) {
+            setCurrentView('signin');
+          } else {
+            setCurrentView('dashboard');
+          }
+        }}
+      />
+    );
+  }
+
+  if (currentView === 'intro') {
+    return (
+      <IntroView
+        onStartSetup={() => setCurrentView('setup')}
+        onSignIn={() => setCurrentView('signin')}
+        onExploreDemo={handleLoadSampleDemo}
+      />
+    );
+  }
+
   if (currentView === 'signin') {
     return (
       <SignInView
         defaultEmail={store.settings.userEmail}
+        onBackToIntro={() => setCurrentView('intro')}
         onSignIn={(email, guestMode) => {
           setStore((prev) => ({
             ...prev,
             isSignedIn: true,
             isGuestMode: guestMode,
+            hasCompletedOnboarding: true,
             settings: { ...prev.settings, userEmail: email },
           }));
           setCurrentView('dashboard');
@@ -329,51 +420,16 @@ export default function App() {
     );
   }
 
-  if (currentView === 'onboarding') {
+  if (currentView === 'setup' || currentView === 'onboarding') {
     return (
       <OnboardingView
-        onSkipToDemo={() => {
-          setStore((prev) => ({ ...prev, hasCompletedOnboarding: true }));
-          setCurrentView('dashboard');
-        }}
-        onCompleteWithServices={(services) => {
-          setStore((prev) => {
-            const existingNames = new Set(prev.subscriptions.map((s) => s.name.toLowerCase()));
-            const additions: Subscription[] = [];
-            services.forEach((svc, idx) => {
-              const matched = Array.from(existingNames).some((n) => n.includes(svc.toLowerCase()));
-              if (!matched) {
-                additions.push({
-                  id: `sub-onb-${Date.now()}-${idx}`,
-                  name: svc,
-                  initials: computeInitials(svc),
-                  avatarBg: 'bg-light-primary-container dark:bg-dark-primary-container text-light-on-primary',
-                  category: svc === 'iCloud+' ? 'Cloud & Utilities' : 'Entertainment',
-                  price: svc === 'iCloud+' ? 9.99 : svc === 'YouTube' ? 13.99 : 15.99,
-                  currency: prev.settings.currency,
-                  cycle: 'monthly',
-                  status: 'active',
-                  nextBillingDate: '2026-12-05',
-                  reminderDays: 3,
-                  startedOn: '2026-11-26',
-                  paymentMethod: 'Apple Pay · ••4821',
-                  isShared: false,
-                  splitCount: 1,
-                  sharedMembers: ['Alex (You)'],
-                  manageUrl: 'https://',
-                  notes: 'Added during onboarding',
-                });
-              }
-            });
-            return {
-              ...prev,
-              hasCompletedOnboarding: true,
-              subscriptions: [...additions, ...prev.subscriptions],
-            };
-          });
-          setCurrentView('dashboard');
-          showToast(`Workspace ready with ${services.length} selected services`);
-        }}
+        initialCurrency={store.settings.currency}
+        initialBudgetCap={store.settings.monthlyBudgetCap}
+        initialWorkspaceName={store.settings.workspaceName}
+        initialUserName={store.settings.userName === 'Guest' ? '' : store.settings.userName}
+        onBack={() => setCurrentView(store.hasCompletedOnboarding ? 'settings' : 'intro')}
+        onSkipToDemo={handleLoadSampleDemo}
+        onCompleteSetup={handleCompleteSetup}
       />
     );
   }
@@ -475,6 +531,7 @@ export default function App() {
           subscriptions={store.subscriptions}
           settings={store.settings}
           onBack={() => navigate('analytics')}
+          onOpenSettings={() => navigate('settings')}
           onSelectSubscription={handleSelectSubscription}
           onUpdateTrimGoal={(goal) => handleUpdateSettings({ annualTrimGoal: goal })}
           onShowToast={(m) => showToast(m)}

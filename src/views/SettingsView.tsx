@@ -29,6 +29,48 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingQuietHours, setEditingQuietHours] = useState(false);
+  const [apiKeyDraft, setApiKeyDraft] = useState(settings.geminiApiKey || '');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isTestingKey, setIsTestingKey] = useState(false);
+  const [keyTestStatus, setKeyTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyDraft.trim();
+    onUpdateSettings({ geminiApiKey: trimmed, aiFeaturesEnabled: trimmed ? true : settings.aiFeaturesEnabled });
+    setKeyTestStatus(null);
+    onShowToast(trimmed ? 'Gemini API key saved locally' : 'Gemini API key cleared');
+  };
+
+  const handleTestApiKey = async () => {
+    const keyToTest = apiKeyDraft.trim();
+    if (!keyToTest) {
+      setKeyTestStatus({ ok: false, message: 'Enter an API key first.' });
+      return;
+    }
+    setIsTestingKey(true);
+    setKeyTestStatus(null);
+    try {
+      const res = await fetch('/api/ai/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-gemini-api-key': keyToTest,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setKeyTestStatus({ ok: false, message: data.error || 'Key verification failed.' });
+      } else {
+        onUpdateSettings({ geminiApiKey: keyToTest, aiFeaturesEnabled: true });
+        setKeyTestStatus({ ok: true, message: 'Key verified · AI audit ready' });
+        onShowToast('Gemini API key verified and saved');
+      }
+    } catch {
+      setKeyTestStatus({ ok: false, message: 'Unable to reach verification endpoint.' });
+    } finally {
+      setIsTestingKey(false);
+    }
+  };
 
   const handleExport = (format: 'csv' | 'json' | 'ics') => {
     if (format === 'csv') {
@@ -266,6 +308,117 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </section>
 
+        {/* Optional AI Features (BYOK) */}
+        <section
+          aria-label="Optional AI features"
+          className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md"
+        >
+          <div className="flex items-center justify-between gap-gutter-md">
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <h2 className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
+                  Optional AI features (BYOK)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface-variant dark:text-dark-on-surface-variant font-label text-label-sm">
+                  Optional
+                </span>
+              </div>
+              <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                Bring your own Gemini API key for AI savings audits. Local audits always work without AI.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              checked={settings.aiFeaturesEnabled}
+              onChange={(e) => {
+                onUpdateSettings({ aiFeaturesEnabled: e.target.checked });
+                onShowToast(e.target.checked ? 'Optional AI features enabled' : 'AI features disabled');
+              }}
+              aria-label="Enable optional AI features"
+              className="w-6 h-6 shrink-0 rounded-sm text-light-primary focus:ring-light-primary border-light-outline-variant"
+            />
+          </div>
+
+          {settings.aiFeaturesEnabled && (
+            <div className="flex flex-col gap-gutter-sm pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant">
+              <label
+                htmlFor="byok-gemini-key"
+                className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant"
+              >
+                Gemini API key
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="byok-gemini-key"
+                  type={showApiKey ? 'text' : 'password'}
+                  value={apiKeyDraft}
+                  onChange={(e) => setApiKeyDraft(e.target.value)}
+                  placeholder="AIza..."
+                  autoComplete="off"
+                  className="w-full min-h-[44px] pl-3.5 pr-11 py-2 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant font-mono text-mono-sm focus:border-light-primary focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey((v) => !v)}
+                  aria-label={showApiKey ? 'Hide API key' : 'Show API key'}
+                  className="absolute right-1.5 w-9 h-9 rounded-full inline-flex items-center justify-center text-light-on-surface-variant dark:text-dark-on-surface-variant"
+                >
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                    {showApiKey ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-gutter-xs">
+                <button
+                  type="button"
+                  onClick={handleSaveApiKey}
+                  className="min-h-[40px] px-3.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm"
+                >
+                  Save key
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTestApiKey}
+                  disabled={isTestingKey}
+                  className="min-h-[40px] px-3.5 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm disabled:opacity-60"
+                >
+                  {isTestingKey ? 'Testing...' : 'Test key'}
+                </button>
+                {(apiKeyDraft || settings.geminiApiKey) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiKeyDraft('');
+                      onUpdateSettings({ geminiApiKey: '' });
+                      setKeyTestStatus(null);
+                      onShowToast('Gemini API key cleared');
+                    }}
+                    className="min-h-[40px] px-3 rounded-md text-light-error dark:text-dark-error font-label text-label-sm"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {keyTestStatus && (
+                <p
+                  role="status"
+                  className={`font-body text-body-sm ${
+                    keyTestStatus.ok ? 'text-success' : 'text-light-error dark:text-dark-error'
+                  }`}
+                >
+                  {keyTestStatus.message}
+                </p>
+              )}
+
+              <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                Stored locally in IndexedDB on this device and sent only when you run an AI audit.
+              </p>
+            </div>
+          )}
+        </section>
+
         {/* Data Export & Backup */}
         <section
           aria-label="Data and privacy"
@@ -311,10 +464,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <div className="grid grid-cols-2 gap-gutter-sm pt-1">
             <button
               type="button"
-              onClick={() => onNavigate('onboarding')}
+              onClick={() => onNavigate('intro')}
               className="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm"
             >
-              Onboarding &amp; iOS guide
+              Replay intro &amp; setup
             </button>
             <button
               type="button"
@@ -340,7 +493,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full min-h-[44px] px-4 py-2.5 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-lg hover:opacity-90"
           >
-            Delete account &amp; all data
+            Reset application &amp; clear all data
           </button>
         </section>
       </main>
@@ -409,15 +562,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       )}
 
-      {/* Delete All Data Confirmation */}
+      {/* Reset Application Confirmation */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="reset-app-title">
           <div className="w-full max-w-sm rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-xl flex flex-col gap-gutter-md border border-light-outline-variant dark:border-dark-outline-variant">
-            <h3 className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
-              Clear all local data?
+            <h3 id="reset-app-title" className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface">
+              Reset application?
             </h3>
             <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-              This removes all subscriptions and household splits from IndexedDB on this device.
+              This removes all subscriptions, household splits, preferences, and your local Gemini API key from this device, and returns the app to its initial setup flow.
             </p>
             <div className="flex items-center justify-end gap-gutter-sm">
               <button
@@ -435,7 +588,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 }}
                 className="min-h-[44px] px-4 py-2 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-sm"
               >
-                Delete all
+                Reset app
               </button>
             </div>
           </div>

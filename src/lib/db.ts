@@ -25,6 +25,26 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
+function mergeWithDefaults(raw: Partial<SubPulseStore> | undefined | null): SubPulseStore {
+  const base = structuredClone(INITIAL_STORE);
+  if (!raw || typeof raw !== 'object') return base;
+  return {
+    ...base,
+    ...raw,
+    settings: {
+      ...base.settings,
+      ...(raw.settings || {}),
+      categoryCaps: {
+        ...base.settings.categoryCaps,
+        ...(raw.settings?.categoryCaps || {}),
+      },
+    },
+    members: Array.isArray(raw.members) ? raw.members : base.members,
+    alerts: Array.isArray(raw.alerts) ? raw.alerts : base.alerts,
+    subscriptions: Array.isArray(raw.subscriptions) ? raw.subscriptions : base.subscriptions,
+  };
+}
+
 export async function loadSubPulseStore(): Promise<SubPulseStore> {
   try {
     const db = await openDatabase();
@@ -34,7 +54,7 @@ export async function loadSubPulseStore(): Promise<SubPulseStore> {
       const req = store.get(STATE_KEY);
       req.onsuccess = () => {
         if (req.result) {
-          resolve(req.result as SubPulseStore);
+          resolve(mergeWithDefaults(req.result as Partial<SubPulseStore>));
         } else {
           resolve(structuredClone(INITIAL_STORE));
         }
@@ -44,7 +64,7 @@ export async function loadSubPulseStore(): Promise<SubPulseStore> {
   } catch {
     try {
       const raw = localStorage.getItem(LS_FALLBACK_KEY);
-      if (raw) return JSON.parse(raw) as SubPulseStore;
+      if (raw) return mergeWithDefaults(JSON.parse(raw) as Partial<SubPulseStore>);
     } catch {
       // ignore
     }

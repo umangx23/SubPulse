@@ -30,11 +30,53 @@ async function startServer() {
     res.json({ ok: true });
   });
 
-  app.post('/api/audit', async (req, res) => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+  const resolveGeminiApiKey = (req: express.Request): string => {
+    const headerKey = req.header('x-gemini-api-key')?.trim();
+    if (headerKey && headerKey !== 'MY_GEMINI_API_KEY') {
+      return headerKey;
+    }
+    const envKey = process.env.GEMINI_API_KEY?.trim();
+    if (envKey && envKey !== 'MY_GEMINI_API_KEY') {
+      return envKey;
+    }
+    return '';
+  };
+
+  app.post('/api/ai/verify', async (req, res) => {
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
       res.status(400).json({
-        error: 'GEMINI_API_KEY is not configured. Configure it in Settings > Secrets to run live AI subscription audits.',
+        ok: false,
+        error: 'Enter a Gemini API key to verify.',
+      });
+      return;
+    }
+
+    try {
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
+      await ai.models.generateContent({
+        model: 'gemini-4-hydrogen',
+        contents: 'Reply with OK',
+      });
+      res.json({ ok: true });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to verify Gemini API key.';
+      res.status(401).json({ ok: false, error: message });
+    }
+  });
+
+  app.post('/api/audit', async (req, res) => {
+    const apiKey = resolveGeminiApiKey(req);
+    if (!apiKey) {
+      res.status(400).json({
+        error: 'No Gemini API key configured. Enable optional AI features and enter your own key in Settings.',
       });
       return;
     }

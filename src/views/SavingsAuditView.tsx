@@ -6,6 +6,7 @@ interface SavingsAuditViewProps {
   subscriptions: Subscription[];
   settings: AppSettings;
   onBack: () => void;
+  onOpenSettings?: () => void;
   onSelectSubscription: (id: string) => void;
   onUpdateTrimGoal: (goal: number) => void;
   onShowToast: (msg: string) => void;
@@ -15,6 +16,7 @@ export const SavingsAuditView: React.FC<SavingsAuditViewProps> = ({
   subscriptions,
   settings,
   onBack,
+  onOpenSettings,
   onSelectSubscription,
   onUpdateTrimGoal,
   onShowToast,
@@ -75,6 +77,14 @@ export const SavingsAuditView: React.FC<SavingsAuditViewProps> = ({
   const potentialLocalMonthlySavings = localSuggestions.reduce((s, x) => s + x.amount, 0);
 
   const runGeminiAudit = async () => {
+    if (!settings.aiFeaturesEnabled) {
+      onShowToast('Enable optional AI features in Settings to run AI audit');
+      return;
+    }
+    if (subscriptions.length === 0) {
+      onShowToast('Add at least one subscription before running an AI audit');
+      return;
+    }
     setIsAuditing(true);
     setAuditError(null);
     try {
@@ -95,9 +105,14 @@ export const SavingsAuditView: React.FC<SavingsAuditViewProps> = ({
         })),
       };
 
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (settings.geminiApiKey?.trim()) {
+        headers['x-gemini-api-key'] = settings.geminiApiKey.trim();
+      }
+
       const res = await fetch('/api/audit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       });
 
@@ -142,15 +157,19 @@ export const SavingsAuditView: React.FC<SavingsAuditViewProps> = ({
         <h1 className="font-headline text-title-md lg:text-headline-md text-light-on-surface dark:text-dark-on-surface">
           Savings &amp; audit
         </h1>
-        <button
-          type="button"
-          onClick={runGeminiAudit}
-          disabled={isAuditing}
-          className="min-h-[44px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm inline-flex items-center gap-1.5 disabled:opacity-60 whitespace-nowrap"
-        >
-          <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
-          <span>{isAuditing ? 'Auditing...' : 'Run AI audit'}</span>
-        </button>
+        {settings.aiFeaturesEnabled ? (
+          <button
+            type="button"
+            onClick={runGeminiAudit}
+            disabled={isAuditing}
+            className="min-h-[44px] px-4 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm inline-flex items-center gap-1.5 disabled:opacity-60 whitespace-nowrap"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">auto_awesome</span>
+            <span>{isAuditing ? 'Auditing...' : 'Run AI audit'}</span>
+          </button>
+        ) : (
+          <div className="w-11" aria-hidden="true" />
+        )}
       </header>
 
       <main className="px-page-margin lg:px-gutter-xl flex flex-col gap-gutter-lg flex-1 max-w-2xl lg:max-w-3xl w-full mx-auto lg:mx-0">
@@ -215,6 +234,32 @@ export const SavingsAuditView: React.FC<SavingsAuditViewProps> = ({
             <div className="h-full rounded-full bg-success" style={{ width: `${goalProgress.pct}%` }} />
           </div>
         </section>
+
+        {/* Optional AI Prompt when disabled */}
+        {!settings.aiFeaturesEnabled && (
+          <section
+            aria-label="Optional AI audit"
+            className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_2px_12px_-2px_rgba(26,27,35,0.05)] flex items-center justify-between gap-gutter-md"
+          >
+            <div className="flex flex-col gap-0.5">
+              <span className="font-title text-title-md text-light-on-surface dark:text-dark-on-surface">
+                Optional Gemini AI audit
+              </span>
+              <span className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
+                Add your own Gemini API key in Settings to unlock AI portfolio recommendations.
+              </span>
+            </div>
+            {onOpenSettings && (
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="min-h-[40px] px-3.5 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm shrink-0"
+              >
+                Configure
+              </button>
+            )}
+          </section>
+        )}
 
         {/* Gemini Live AI Audit Results / Error / Loading */}
         {isAuditing && (

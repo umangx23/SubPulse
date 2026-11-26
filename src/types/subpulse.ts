@@ -13,6 +13,9 @@ export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'CAD';
 export type ThemeMode = 'light' | 'dark' | 'system';
 
 export type AppView =
+  | 'splash'
+  | 'intro'
+  | 'setup'
   | 'dashboard'
   | 'subscriptions'
   | 'detail'
@@ -83,6 +86,8 @@ export interface AppSettings {
   userInitials: string;
   userEmail: string;
   currency: CurrencyCode;
+  country?: string;
+  timezone?: string;
   theme: ThemeMode;
   monthlyBudgetCap: number;
   annualTrimGoal: number;
@@ -94,6 +99,8 @@ export interface AppSettings {
   emailFallbackEnabled: boolean;
   quietHoursStart: string;
   quietHoursEnd: string;
+  aiFeaturesEnabled: boolean;
+  geminiApiKey?: string;
   categoryCaps: Record<SubscriptionCategory, number>;
 }
 

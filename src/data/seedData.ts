@@ -10,7 +10,49 @@ export const HISTORICAL_SPEND_TREND = [
   { month: 'Oct', amount: 178.0 },
 ];
 
+const detectedTimezone =
+  typeof Intl !== 'undefined'
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
+    : 'America/New_York';
+
 export const INITIAL_STORE: SubPulseStore = {
+  hasCompletedOnboarding: false,
+  isSignedIn: false,
+  isGuestMode: false,
+  settings: {
+    workspaceName: 'Personal',
+    userName: 'Guest',
+    userInitials: 'SP',
+    userEmail: '',
+    currency: 'USD',
+    country: 'United States',
+    timezone: detectedTimezone,
+    theme: 'dark',
+    monthlyBudgetCap: 250.0,
+    annualTrimGoal: 500.0,
+    savedYtd: 0,
+    cancelledCountYtd: 0,
+    passkeyLockEnabled: false,
+    totpEnabled: false,
+    webPushEnabled: false,
+    emailFallbackEnabled: true,
+    quietHoursStart: '22:00',
+    quietHoursEnd: '08:00',
+    aiFeaturesEnabled: false,
+    geminiApiKey: '',
+    categoryCaps: {
+      'Productivity & AI': 75,
+      Entertainment: 80,
+      'Cloud & Utilities': 95,
+      Fitness: 50,
+    },
+  },
+  members: [],
+  alerts: [],
+  subscriptions: [],
+};
+
+export const DEMO_STORE: SubPulseStore = {
   hasCompletedOnboarding: true,
   isSignedIn: true,
   isGuestMode: false,
@@ -20,6 +62,8 @@ export const INITIAL_STORE: SubPulseStore = {
     userInitials: 'AM',
     userEmail: 'alex.morgan@icloud.com',
     currency: 'USD',
+    country: 'United States',
+    timezone: detectedTimezone,
     theme: 'dark',
     monthlyBudgetCap: 250.0,
     annualTrimGoal: 500.0,
@@ -31,6 +75,8 @@ export const INITIAL_STORE: SubPulseStore = {
     emailFallbackEnabled: true,
     quietHoursStart: '22:00',
     quietHoursEnd: '08:00',
+    aiFeaturesEnabled: false,
+    geminiApiKey: '',
     categoryCaps: {
       'Productivity & AI': 75,
       Entertainment: 80,

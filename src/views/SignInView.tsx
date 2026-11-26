@@ -3,17 +3,18 @@ import React, { useState } from 'react';
 interface SignInViewProps {
   defaultEmail: string;
   onSignIn: (email: string, guestMode: boolean) => void;
+  onBackToIntro?: () => void;
 }
 
-export const SignInView: React.FC<SignInViewProps> = ({ defaultEmail, onSignIn }) => {
-  const [email, setEmail] = useState(defaultEmail || 'alex.morgan@icloud.com');
-  const [password, setPassword] = useState('••••••••••••');
+export const SignInView: React.FC<SignInViewProps> = ({ defaultEmail, onSignIn, onBackToIntro }) => {
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState(defaultEmail || '');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSignIn(email.trim() || 'alex.morgan@icloud.com', false);
+    onSignIn(email.trim() || 'guest@subpulse.app', false);
   };
 
   return (
@@ -26,54 +27,41 @@ export const SignInView: React.FC<SignInViewProps> = ({ defaultEmail, onSignIn }
           </span>
         </div>
         <h1 className="font-headline text-headline-lg-mobile text-light-on-surface dark:text-dark-on-surface">
-          Welcome back
+          {authMode === 'signin' ? 'Welcome back' : 'Create your account'}
         </h1>
         <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant">
-          Sign in to sync your household subscriptions
+          {authMode === 'signin'
+            ? 'Sign in to sync your household subscriptions'
+            : 'Save your subscriptions securely across devices'}
         </p>
+        <div className="inline-flex p-1 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant mt-1">
+          <button
+            type="button"
+            onClick={() => setAuthMode('signin')}
+            className={`min-h-[36px] px-4 rounded-full font-label text-label-sm transition-colors ${
+              authMode === 'signin'
+                ? 'bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary'
+                : 'text-light-on-surface-variant dark:text-dark-on-surface-variant'
+            }`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => setAuthMode('signup')}
+            className={`min-h-[36px] px-4 rounded-full font-label text-label-sm transition-colors ${
+              authMode === 'signup'
+                ? 'bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary'
+                : 'text-light-on-surface-variant dark:text-dark-on-surface-variant'
+            }`}
+          >
+            Create account
+          </button>
+        </div>
       </header>
 
       {/* Primary Auth Card */}
       <main className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-lg">
-        {/* Social & Passkey Quick Sign-In */}
-        <div className="flex flex-col gap-gutter-sm">
-          <button
-            type="button"
-            onClick={() => onSignIn(email, false)}
-            className="w-full min-h-[48px] px-4 py-2.5 rounded-md bg-light-inverse-surface dark:bg-dark-inverse-surface text-light-inverse-on-surface dark:text-dark-inverse-on-surface font-label text-label-lg inline-flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-          >
-            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">phone_iphone</span>
-            <span>Sign in with Apple</span>
-          </button>
-
-          <div className="grid grid-cols-2 gap-gutter-sm">
-            <button
-              type="button"
-              onClick={() => onSignIn(email, false)}
-              className="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm inline-flex items-center justify-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">passkey</span>
-              <span>Face ID</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onSignIn(email, false)}
-              className="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm inline-flex items-center justify-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">account_circle</span>
-              <span>Google</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-gutter-sm">
-          <span className="h-px flex-1 bg-light-outline-variant dark:bg-dark-outline-variant" />
-          <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-            or email
-          </span>
-          <span className="h-px flex-1 bg-light-outline-variant dark:bg-dark-outline-variant" />
-        </div>
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-gutter-md">
           <div className="flex flex-col gap-1.5">
             <label
@@ -87,33 +75,26 @@ export const SignInView: React.FC<SignInViewProps> = ({ defaultEmail, onSignIn }
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
               required
               className="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:outline-none focus:ring-1 focus:ring-light-primary"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="auth-password"
-                className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant"
-              >
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() => setMagicLinkSent(true)}
-                className="font-label text-label-sm text-light-primary dark:text-dark-primary"
-              >
-                Forgot?
-              </button>
-            </div>
+            <label
+              htmlFor="auth-password"
+              className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant"
+            >
+              Password
+            </label>
             <div className="relative flex items-center">
               <input
                 id="auth-password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
                 required
                 className="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:outline-none focus:ring-1 focus:ring-light-primary"
               />
@@ -130,38 +111,34 @@ export const SignInView: React.FC<SignInViewProps> = ({ defaultEmail, onSignIn }
             </div>
           </div>
 
-          {magicLinkSent && (
-            <p className="font-body text-body-sm text-success">
-              One-time sign-in link sent to {email}.
-            </p>
-          )}
-
           <button
             type="submit"
             className="w-full inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg transition-opacity hover:opacity-90 active:scale-[0.98]"
           >
-            Sign in
+            {authMode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
 
           <button
             type="button"
-            onClick={() => setMagicLinkSent(true)}
-            className="w-full min-h-[44px] px-4 py-2 rounded-md text-light-primary dark:text-dark-primary font-label text-label-sm"
+            onClick={() => onSignIn(email.trim() || 'guest@local', true)}
+            className="w-full inline-flex items-center justify-center min-h-[44px] px-4 py-2 rounded-md border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-label text-label-sm hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low"
           >
-            Send one-time magic link instead
+            Skip for now (use locally)
           </button>
         </form>
       </main>
 
-      {/* Local-only / Guest Mode */}
-      <footer className="text-center">
-        <button
-          type="button"
-          onClick={() => onSignIn(email, true)}
-          className="inline-flex items-center justify-center min-h-[44px] px-4 font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant hover:text-light-on-surface dark:hover:text-dark-on-surface"
-        >
-          Continue in local-only guest mode
-        </button>
+      {/* Secondary Navigation */}
+      <footer className="flex flex-col items-center gap-1 text-center">
+        {onBackToIntro && (
+          <button
+            type="button"
+            onClick={onBackToIntro}
+            className="inline-flex items-center justify-center min-h-[40px] px-4 font-label text-label-sm text-light-primary dark:text-dark-primary hover:underline"
+          >
+            Replay intro &amp; setup
+          </button>
+        )}
       </footer>
     </div>
   );
