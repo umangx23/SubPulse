@@ -284,7 +284,7 @@ function mapSubscriptionRow(row: Record<string, unknown>): Subscription {
 function toV2SubscriptionRecord(userId: string, sub: Subscription) {
   return {
     user_id: userId,
-    id: sub.id,
+    id: toUuid(sub.id),
     name: sub.name,
     initials: sub.initials,
     avatar_bg: sub.avatarBg,
@@ -359,7 +359,7 @@ function mapMemberRow(row: Record<string, unknown>): HouseholdMember {
 function toV2MemberRecord(userId: string, member: HouseholdMember) {
   return {
     user_id: userId,
-    id: member.id,
+    id: toUuid(member.id),
     name: member.name,
     initials: member.initials,
     avatar_color: member.avatarColor,
@@ -405,8 +405,8 @@ function mapAlertRow(row: Record<string, unknown>): AlertItem {
 function toV2AlertRecord(userId: string, alert: AlertItem) {
   return {
     user_id: userId,
-    id: alert.id,
-    subscription_id: alert.subscriptionId ?? null,
+    id: toUuid(alert.id),
+    subscription_id: alert.subscriptionId ? toUuid(alert.subscriptionId) : null,
     title: alert.title,
     description: alert.description,
     timestamp_label: alert.timestampLabel,
@@ -854,7 +854,7 @@ export async function syncSubscriptionArchive(userId: string, subId: string): Pr
       .from('subscriptions')
       .update({ archived_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('user_id', userId)
-      .eq('id', subId);
+      .eq('id', toUuid(subId));
     if (error) throw error;
     return;
   }
