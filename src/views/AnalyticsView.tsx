@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { HISTORICAL_SPEND_TREND, REFERENCE_TODAY } from '../data/seedData';
-import { downloadFile, formatMoney, getMonthlyShare } from '../lib/formatters';
+import { REFERENCE_TODAY } from '../data/seedData';
+import { downloadFile, formatMoney, getCurrencySymbol, getMonthlyShare } from '../lib/formatters';
 import { AppSettings, AppView, Subscription, SubscriptionCategory } from '../types/subpulse';
 
 interface AnalyticsViewProps {
@@ -28,11 +28,31 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
     const dailyCost = yearlyForecast / 365;
     const weeklyCost = yearlyForecast / 52;
 
-    const trend = [
-      ...HISTORICAL_SPEND_TREND,
-      { month: 'Nov', amount: Number(monthlyTotal.toFixed(2)) },
+    const months = [
+      { key: '2026-06', month: 'Jun' },
+      { key: '2026-07', month: 'Jul' },
+      { key: '2026-08', month: 'Aug' },
+      { key: '2026-09', month: 'Sep' },
+      { key: '2026-10', month: 'Oct' },
+      { key: '2026-11', month: 'Nov' },
     ];
-    const avgTrend = trend.reduce((sum, m) => sum + m.amount, 0) / trend.length;
+
+    const trend = months.map(({ key, month }) => {
+      if (key === '2026-11') {
+        return { month, amount: Number(monthlyTotal.toFixed(2)) };
+      }
+      const monthSpend = subscriptions.reduce((sum, s) => {
+        const startedMonth = (s.startedOn || '2026-11-26').slice(0, 7);
+        return startedMonth <= key ? sum + getMonthlyShare(s) : sum;
+      }, 0);
+      return { month, amount: Number(monthSpend.toFixed(2)) };
+    });
+
+    const nonZeroMonths = trend.filter((m) => m.amount > 0);
+    const avgTrend =
+      nonZeroMonths.length > 0
+        ? nonZeroMonths.reduce((sum, m) => sum + m.amount, 0) / nonZeroMonths.length
+        : 0;
 
     const categories: SubscriptionCategory[] = ['Productivity & AI', 'Entertainment', 'Cloud & Utilities'];
     const breakdown = categories.map((cat) => {
@@ -253,8 +273,15 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
 
             <div className="grid grid-cols-6 gap-gutter-sm lg:gap-gutter-md items-end h-44 lg:h-56 pt-4">
               {metrics.trend.map((pt) => {
-                const heightPct = Math.min(100, Math.max(15, Math.round((pt.amount / settings.monthlyBudgetCap) * 100)));
+                const heightPct =
+                  pt.amount <= 0
+                    ? 8
+                    : Math.min(100, Math.max(15, Math.round((pt.amount / settings.monthlyBudgetCap) * 100)));
                 const isSelected = pt.month === selectedMonth;
+                const sym = getCurrencySymbol(settings.currency);
+                const formattedCompact = Math.round(pt.amount).toLocaleString(
+                  settings.currency === 'INR' ? 'en-IN' : 'en-US'
+                );
                 return (
                   <button
                     key={pt.month}
@@ -269,7 +296,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({
                           : 'text-light-on-surface-variant dark:text-dark-on-surface-variant'
                       }`}
                     >
-                      ${Math.round(pt.amount)}
+                      {sym}{formattedCompact}
                     </span>
                     <div
                       className={`w-full rounded-t-md transition-colors ${
