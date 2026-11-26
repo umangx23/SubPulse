@@ -1,0 +1,224 @@
+import React from 'react';
+import { AppSettings, AppView } from '../types/subpulse';
+import { PWAInstallButton } from './PWAInstallButton';
+
+interface ShellProps {
+  currentView: AppView;
+  onNavigate: (view: AppView) => void;
+  onAddNew: () => void;
+  settings: AppSettings;
+  unreadAlertsCount: number;
+  isOffline: boolean;
+  onRetryConnection: () => void;
+  snackbarMessage: string | null;
+  onUndo?: (() => void) | null;
+  onDismissSnackbar: () => void;
+  children: React.ReactNode;
+}
+
+const DESKTOP_NAV: Array<{ id: AppView; label: string; icon: string }> = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'home' },
+  { id: 'subscriptions', label: 'All plans', icon: 'credit_card' },
+  { id: 'analytics', label: 'Insights', icon: 'bar_chart' },
+  { id: 'household', label: 'Household', icon: 'group' },
+  { id: 'notifications', label: 'Alerts', icon: 'notifications' },
+  { id: 'settings', label: 'Settings', icon: 'settings' },
+];
+
+const MOBILE_TABS: Array<{ id: AppView; label: string; icon: string }> = [
+  { id: 'dashboard', label: 'Home', icon: 'home' },
+  { id: 'subscriptions', label: 'Plans', icon: 'credit_card' },
+  { id: 'analytics', label: 'Insights', icon: 'bar_chart' },
+  { id: 'settings', label: 'Settings', icon: 'settings' },
+];
+
+export const Shell: React.FC<ShellProps> = ({
+  currentView,
+  onNavigate,
+  onAddNew,
+  settings,
+  unreadAlertsCount,
+  isOffline,
+  onRetryConnection,
+  snackbarMessage,
+  onUndo,
+  onDismissSnackbar,
+  children,
+}) => {
+  const isNavActive = (tabId: AppView) => {
+    if (tabId === 'subscriptions' && (currentView === 'detail' || currentView === 'edit')) return true;
+    if (tabId === 'analytics' && currentView === 'savings') return true;
+    if (tabId === 'settings' && (currentView === 'household' || currentView === 'states')) return true;
+    return currentView === tabId;
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col lg:flex-row bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface">
+      {/* Persistent Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 min-h-screen bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border-r border-light-outline-variant dark:border-dark-outline-variant p-gutter-xl flex-col justify-between shrink-0 sticky top-0 h-screen">
+        <div className="flex flex-col gap-gutter-xl">
+          {/* Brand */}
+          <button
+            type="button"
+            onClick={() => onNavigate('dashboard')}
+            className="flex items-center gap-gutter-sm text-left"
+          >
+            <div className="w-10 h-10 rounded-md bg-light-primary dark:bg-dark-primary flex items-center justify-center text-light-on-primary dark:text-dark-on-primary shadow-sm shrink-0">
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">
+                account_balance_wallet
+              </span>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface leading-tight truncate">
+                SubPulse
+              </span>
+              <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant truncate">
+                {settings.workspaceName} · {settings.currency}
+              </span>
+            </div>
+          </button>
+
+          {/* Sidebar Nav */}
+          <nav aria-label="Primary navigation" className="flex flex-col gap-gutter-xs">
+            {DESKTOP_NAV.map((item) => {
+              const active =
+                currentView === item.id ||
+                (item.id === 'subscriptions' && (currentView === 'detail' || currentView === 'edit')) ||
+                (item.id === 'analytics' && currentView === 'savings');
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onNavigate(item.id)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center justify-between gap-gutter-md min-h-[44px] px-3.5 rounded-md font-label text-label-lg transition-colors duration-state-change ease-state-change whitespace-nowrap ${
+                    active
+                      ? 'bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary'
+                      : 'text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low'
+                  }`}
+                >
+                  <span className="flex items-center gap-gutter-md">
+                    <span
+                      className={`material-symbols-outlined text-[20px] ${active ? 'filled' : ''}`}
+                      aria-hidden="true"
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </span>
+                  {item.id === 'notifications' && unreadAlertsCount > 0 && (
+                    <span className="font-mono text-mono-sm text-accent tabular-nums">
+                      {unreadAlertsCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="flex flex-col gap-gutter-sm">
+          <PWAInstallButton />
+          <button
+            type="button"
+            onClick={onAddNew}
+            className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg whitespace-nowrap hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
+            <span>Add subscription</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 pb-24 lg:pb-10">
+        {isOffline && (
+          <div
+            role="status"
+            className="bg-warning-container text-on-warning-container px-page-margin lg:px-gutter-xl py-2.5 flex items-center justify-between gap-gutter-sm"
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">cloud_off</span>
+              <span className="font-label text-label-sm">Offline · Saved locally in IndexedDB</span>
+            </div>
+            <button
+              type="button"
+              onClick={onRetryConnection}
+              className="font-label text-label-sm underline min-h-[32px] px-2"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        <div className="w-full max-w-[430px] lg:max-w-[1040px] mx-auto lg:mx-0 flex-1 flex flex-col">
+          {children}
+        </div>
+      </div>
+
+      {/* Undo / Feedback Snackbar */}
+      {snackbarMessage && (
+        <div className="fixed bottom-20 lg:bottom-6 left-4 right-4 lg:left-auto lg:right-6 lg:w-96 z-40">
+          <div
+            role="alert"
+            className="rounded-lg bg-light-inverse-surface dark:bg-dark-inverse-surface text-light-inverse-on-surface dark:text-dark-inverse-on-surface px-4 py-3 flex items-center justify-between gap-gutter-md shadow-lg"
+          >
+            <span className="font-body text-body-sm truncate">{snackbarMessage}</span>
+            <div className="flex items-center gap-3 shrink-0">
+              {onUndo && (
+                <button
+                  type="button"
+                  onClick={onUndo}
+                  className="font-label text-label-sm text-light-inverse-primary dark:text-dark-inverse-primary whitespace-nowrap"
+                >
+                  Undo
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onDismissSnackbar}
+                aria-label="Dismiss message"
+                className="text-light-inverse-on-surface/70 dark:text-dark-inverse-on-surface/70 hover:opacity-100"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Tab Navigation */}
+      <nav
+        aria-label="Primary navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border-t border-light-outline-variant dark:border-dark-outline-variant pb-[env(safe-area-inset-bottom)]"
+      >
+        <div className="max-w-[430px] mx-auto grid grid-cols-4 h-16 px-2">
+          {MOBILE_TABS.map((tab) => {
+            const active = isNavActive(tab.id);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onNavigate(tab.id)}
+                aria-current={active ? 'page' : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                  active
+                    ? 'text-light-primary dark:text-dark-primary'
+                    : 'text-light-on-surface-variant dark:text-dark-on-surface-variant hover:text-light-on-surface dark:hover:text-dark-on-surface'
+                }`}
+              >
+                <span
+                  className={`material-symbols-outlined text-[22px] ${active ? 'filled' : ''}`}
+                  aria-hidden="true"
+                >
+                  {tab.icon}
+                </span>
+                <span className="font-label text-label-sm">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+};

@@ -1,0 +1,264 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Sign In &amp; Passkey — SubPulse</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config" data-stitch-original-src="5338193b73612fde===../../tailwind.config.js">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#E11D48',
+        'on-accent': '#FFFFFF',
+        'success': '#15803D',
+        'on-success': '#FFFFFF',
+        'success-container': '#DCFCE7',
+        'on-success-container': '#14532D',
+        'warning': '#B45309',
+        'on-warning': '#FFFFFF',
+        'warning-container': '#FEF3C7',
+        'on-warning-container': '#78350F',
+        'light-primary': '#0037B0',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-container': '#1D4ED8',
+        'light-on-primary-container': '#CAD3FF',
+        'light-secondary': '#4D5B94',
+        'light-on-secondary': '#FFFFFF',
+        'light-secondary-container': '#B0BEFE',
+        'light-on-secondary-container': '#3D4C83',
+        'light-tertiary': '#8E0026',
+        'light-on-tertiary': '#FFFFFF',
+        'light-tertiary-container': '#BA0035',
+        'light-on-tertiary-container': '#FFC7C9',
+        'light-error': '#BA1A1A',
+        'light-on-error': '#FFFFFF',
+        'light-error-container': '#FFDAD6',
+        'light-on-error-container': '#93000A',
+        'light-background': '#FAF8FF',
+        'light-on-background': '#1A1B23',
+        'light-surface': '#FAF8FF',
+        'light-surface-dim': '#D9D9E5',
+        'light-surface-bright': '#FAF8FF',
+        'light-surface-container-lowest': '#FFFFFF',
+        'light-surface-container-low': '#F3F2FE',
+        'light-surface-container': '#EDEDF9',
+        'light-surface-container-high': '#E8E7F3',
+        'light-surface-container-highest': '#E2E1ED',
+        'light-on-surface': '#1A1B23',
+        'light-surface-variant': '#E0E1F4',
+        'light-on-surface-variant': '#434655',
+        'light-outline': '#747686',
+        'light-outline-variant': '#C4C5D7',
+        'light-inverse-surface': '#2E3039',
+        'light-inverse-on-surface': '#F0F0FB',
+        'light-inverse-primary': '#B7C4FF',
+        'dark-primary': '#B7C4FF',
+        'dark-on-primary': '#002682',
+        'dark-primary-container': '#1D4ED8',
+        'dark-on-primary-container': '#CAD3FF',
+        'dark-secondary': '#B7C4FF',
+        'dark-on-secondary': '#1D2C63',
+        'dark-secondary-container': '#35437B',
+        'dark-on-secondary-container': '#A4B2F1',
+        'dark-tertiary': '#FFB3B6',
+        'dark-on-tertiary': '#68001A',
+        'dark-tertiary-container': '#BA0035',
+        'dark-on-tertiary-container': '#FFC7C9',
+        'dark-error': '#FFB4AB',
+        'dark-on-error': '#690005',
+        'dark-error-container': '#93000A',
+        'dark-on-error-container': '#FFDAD6',
+        'dark-background': '#11131B',
+        'dark-on-background': '#E2E1ED',
+        'dark-surface': '#11131B',
+        'dark-surface-dim': '#11131B',
+        'dark-surface-bright': '#373942',
+        'dark-surface-container-lowest': '#0C0E16',
+        'dark-surface-container-low': '#1A1B23',
+        'dark-surface-container': '#1E1F27',
+        'dark-surface-container-high': '#282932',
+        'dark-surface-container-highest': '#33343D',
+        'dark-on-surface': '#E2E1ED',
+        'dark-surface-variant': '#434655',
+        'dark-on-surface-variant': '#C4C5D7',
+        'dark-outline': '#8E90A0',
+        'dark-outline-variant': '#434655',
+        'dark-inverse-surface': '#E2E1ED',
+        'dark-inverse-on-surface': '#2E3039',
+        'dark-inverse-primary': '#2151DA',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'DEFAULT': '10px',
+        'md': '14px',
+        'lg': '16px',
+        'xl': '24px',
+        'full': '9999px',
+      },
+      spacing: {
+        'gutter-xs': '4px',
+        'gutter-sm': '8px',
+        'gutter-md': '12px',
+        'gutter-lg': '16px',
+        'gutter-xl': '24px',
+        'page-margin': '20px',
+        'section': '32px',
+      },
+      fontFamily: {
+        'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'headline': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'title': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'body': ['"Instrument Sans"', 'sans-serif'],
+        'label': ['"Instrument Sans"', 'sans-serif'],
+        'mono': ['"Source Code Pro"', 'monospace'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '44px', letterSpacing: '-0.75px', fontWeight: '700' }],
+        'display-lg-mobile': ['32px', { lineHeight: '36px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg': ['36px', { lineHeight: '42px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg-mobile': ['24px', { lineHeight: '30px', letterSpacing: '-0.25px', fontWeight: '700' }],
+        'headline-md': ['20px', { lineHeight: '26px', letterSpacing: '-0.2px', fontWeight: '700' }],
+        'title-md': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '600' }],
+        'body-md': ['15px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.1px', fontWeight: '600' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '600' }],
+        'mono-md': ['15px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '600' }],
+        'mono-sm': ['12px', { lineHeight: '16px', letterSpacing: '0px', fontWeight: '500' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '240ms',
+        'surface-exit': '160ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'surface-exit': '0ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;family=Source+Code+Pro:wght@500;600&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+  <style>
+    .material-symbols-outlined, .material-symbols-rounded, .material-symbols-sharp, .material-icons {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      line-height: 1 !important;
+      box-sizing: content-box;
+      overflow: hidden;
+      white-space: nowrap;
+      direction: ltr;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-body antialiased selection:bg-light-primary-container selection:text-light-on-primary">
+  <div class="min-h-screen flex flex-col justify-center max-w-[430px] mx-auto px-page-margin py-8 gap-gutter-xl">
+
+    <!-- Brand Header -->
+    <header class="flex flex-col items-center text-center gap-gutter-sm">
+      <div class="w-12 h-12 rounded-lg bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-[24px]" aria-hidden="true">account_balance_wallet</span>
+      </div>
+      <h1 class="font-headline text-headline-lg-mobile text-light-on-surface dark:text-dark-on-surface" data-design-text-token="headline-lg-mobile">Welcome back</h1>
+      <p class="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-md">Sign in to sync your household subscriptions</p>
+    </header>
+
+    <!-- Primary Auth Card -->
+    <main class="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-lg">
+
+      <!-- Social & Passkey Quick Sign-In -->
+      <div class="flex flex-col gap-gutter-sm">
+        <button type="button" class="w-full min-h-[48px] px-4 py-2.5 rounded-md bg-light-inverse-surface dark:bg-dark-inverse-surface text-light-inverse-on-surface dark:text-dark-inverse-on-surface font-label text-label-lg inline-flex items-center justify-center gap-2 transition-opacity duration-state-change ease-state-change hover:opacity-90">
+          <span class="material-symbols-outlined text-[20px]" aria-hidden="true">phone_iphone</span>
+          <span data-design-text-token="label-lg">Sign in with Apple</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-gutter-sm">
+          <button type="button" class="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm inline-flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">passkey</span>
+            <span data-design-text-token="label-sm">Face ID</span>
+          </button>
+          <button type="button" class="min-h-[44px] px-3 py-2 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm inline-flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]" aria-hidden="true">account_circle</span>
+            <span data-design-text-token="label-sm">Google</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-gutter-sm">
+        <span class="h-px flex-1 bg-light-outline-variant dark:bg-dark-outline-variant"></span>
+        <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">or email</span>
+        <span class="h-px flex-1 bg-light-outline-variant dark:bg-dark-outline-variant"></span>
+      </div>
+
+      <!-- Email & Password Form (16px+ inputs) -->
+      <form action="../dashboard/Dashboard.html" class="flex flex-col gap-gutter-md">
+        <div class="flex flex-col gap-1.5">
+          <label for="auth-email" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Email address</label>
+          <input id="auth-email" type="email" value="alex.morgan@icloud.com" required class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label for="auth-password" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Password</label>
+            <a href="#forgot" class="font-label text-label-sm text-light-primary dark:text-dark-primary" data-design-text-token="label-sm">Forgot?</a>
+          </div>
+          <div class="relative flex items-center">
+            <input id="auth-password" type="password" value="••••••••••••" required class="w-full min-h-[44px] pl-3.5 pr-11 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+            <button id="toggle-pw" type="button" aria-label="Show password" class="absolute right-1.5 w-9 h-9 rounded-full inline-flex items-center justify-center text-light-on-surface-variant dark:text-dark-on-surface-variant">
+              <span id="pw-icon" class="material-symbols-outlined text-[18px]" aria-hidden="true">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- COMPONENT: button-primary -->
+        <button data-component-id="button-primary" data-component-type="button" data-component-variant="primary" type="submit" class="w-full inline-flex items-center justify-center min-h-[48px] px-5 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg transition-colors duration-state-change ease-state-change hover:opacity-90 active:scale-[0.98]">
+          <span data-design-text-token="label-lg">Sign in</span>
+        </button>
+
+        <button type="button" class="w-full min-h-[44px] px-4 py-2 rounded-md text-light-primary dark:text-dark-primary font-label text-label-sm">
+          <span data-design-text-token="label-sm">Send one-time magic link instead</span>
+        </button>
+      </form>
+    </main>
+
+    <!-- Local-only / Guest Mode -->
+    <footer class="text-center">
+      <a href="../dashboard/Dashboard.html" class="inline-flex items-center justify-center min-h-[44px] px-4 font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant hover:text-light-on-surface dark:hover:text-dark-on-surface">
+        <span data-design-text-token="label-sm">Continue in local-only guest mode</span>
+      </a>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      const pwInput = document.getElementById('auth-password');
+      const toggleBtn = document.getElementById('toggle-pw');
+      const pwIcon = document.getElementById('pw-icon');
+      if (pwInput && toggleBtn && pwIcon) {
+        toggleBtn.addEventListener('click', function () {
+          const isPw = pwInput.type === 'password';
+          pwInput.type = isPw ? 'text' : 'password';
+          pwIcon.textContent = isPw ? 'visibility_off' : 'visibility';
+        });
+      }
+    })();
+  </script>
+
+
+</body></html>

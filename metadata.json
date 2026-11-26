@@ -1,0 +1,6 @@
+{
+  "name": "SubPulse",
+  "description": "Track household subscription splits, catch ending free trials, analyze spend trends, and stay under your monthly budget cap.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

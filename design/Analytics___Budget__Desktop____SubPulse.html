@@ -1,0 +1,351 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics &amp; Budget (Desktop) — SubPulse</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config" data-stitch-original-src="5338193b73612fde===../../tailwind.config.js">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#E11D48',
+        'on-accent': '#FFFFFF',
+        'success': '#15803D',
+        'on-success': '#FFFFFF',
+        'success-container': '#DCFCE7',
+        'on-success-container': '#14532D',
+        'warning': '#B45309',
+        'on-warning': '#FFFFFF',
+        'warning-container': '#FEF3C7',
+        'on-warning-container': '#78350F',
+        'light-primary': '#0037B0',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-container': '#1D4ED8',
+        'light-on-primary-container': '#CAD3FF',
+        'light-secondary': '#4D5B94',
+        'light-on-secondary': '#FFFFFF',
+        'light-secondary-container': '#B0BEFE',
+        'light-on-secondary-container': '#3D4C83',
+        'light-tertiary': '#8E0026',
+        'light-on-tertiary': '#FFFFFF',
+        'light-tertiary-container': '#BA0035',
+        'light-on-tertiary-container': '#FFC7C9',
+        'light-error': '#BA1A1A',
+        'light-on-error': '#FFFFFF',
+        'light-error-container': '#FFDAD6',
+        'light-on-error-container': '#93000A',
+        'light-background': '#FAF8FF',
+        'light-on-background': '#1A1B23',
+        'light-surface': '#FAF8FF',
+        'light-surface-dim': '#D9D9E5',
+        'light-surface-bright': '#FAF8FF',
+        'light-surface-container-lowest': '#FFFFFF',
+        'light-surface-container-low': '#F3F2FE',
+        'light-surface-container': '#EDEDF9',
+        'light-surface-container-high': '#E8E7F3',
+        'light-surface-container-highest': '#E2E1ED',
+        'light-on-surface': '#1A1B23',
+        'light-surface-variant': '#E0E1F4',
+        'light-on-surface-variant': '#434655',
+        'light-outline': '#747686',
+        'light-outline-variant': '#C4C5D7',
+        'light-inverse-surface': '#2E3039',
+        'light-inverse-on-surface': '#F0F0FB',
+        'light-inverse-primary': '#B7C4FF',
+        'dark-primary': '#B7C4FF',
+        'dark-on-primary': '#002682',
+        'dark-primary-container': '#1D4ED8',
+        'dark-on-primary-container': '#CAD3FF',
+        'dark-secondary': '#B7C4FF',
+        'dark-on-secondary': '#1D2C63',
+        'dark-secondary-container': '#35437B',
+        'dark-on-secondary-container': '#A4B2F1',
+        'dark-tertiary': '#FFB3B6',
+        'dark-on-tertiary': '#68001A',
+        'dark-tertiary-container': '#BA0035',
+        'dark-on-tertiary-container': '#FFC7C9',
+        'dark-error': '#FFB4AB',
+        'dark-on-error': '#690005',
+        'dark-error-container': '#93000A',
+        'dark-on-error-container': '#FFDAD6',
+        'dark-background': '#11131B',
+        'dark-on-background': '#E2E1ED',
+        'dark-surface': '#11131B',
+        'dark-surface-dim': '#11131B',
+        'dark-surface-bright': '#373942',
+        'dark-surface-container-lowest': '#0C0E16',
+        'dark-surface-container-low': '#1A1B23',
+        'dark-surface-container': '#1E1F27',
+        'dark-surface-container-high': '#282932',
+        'dark-surface-container-highest': '#33343D',
+        'dark-on-surface': '#E2E1ED',
+        'dark-surface-variant': '#434655',
+        'dark-on-surface-variant': '#C4C5D7',
+        'dark-outline': '#8E90A0',
+        'dark-outline-variant': '#434655',
+        'dark-inverse-surface': '#E2E1ED',
+        'dark-inverse-on-surface': '#2E3039',
+        'dark-inverse-primary': '#2151DA',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'DEFAULT': '10px',
+        'md': '14px',
+        'lg': '16px',
+        'xl': '24px',
+        'full': '9999px',
+      },
+      spacing: {
+        'gutter-xs': '4px',
+        'gutter-sm': '8px',
+        'gutter-md': '12px',
+        'gutter-lg': '16px',
+        'gutter-xl': '24px',
+        'page-margin': '20px',
+        'section': '32px',
+      },
+      fontFamily: {
+        'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'headline': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'title': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'body': ['"Instrument Sans"', 'sans-serif'],
+        'label': ['"Instrument Sans"', 'sans-serif'],
+        'mono': ['"Source Code Pro"', 'monospace'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '44px', letterSpacing: '-0.75px', fontWeight: '700' }],
+        'display-lg-mobile': ['32px', { lineHeight: '36px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg': ['36px', { lineHeight: '42px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg-mobile': ['24px', { lineHeight: '30px', letterSpacing: '-0.25px', fontWeight: '700' }],
+        'headline-md': ['20px', { lineHeight: '26px', letterSpacing: '-0.2px', fontWeight: '700' }],
+        'title-md': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '600' }],
+        'body-md': ['15px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.1px', fontWeight: '600' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '600' }],
+        'mono-md': ['15px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '600' }],
+        'mono-sm': ['12px', { lineHeight: '16px', letterSpacing: '0px', fontWeight: '500' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '240ms',
+        'surface-exit': '160ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'surface-exit': '0ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;family=Source+Code+Pro:wght@500;600&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+  <style>
+    .material-symbols-outlined, .material-symbols-rounded, .material-symbols-sharp, .material-icons {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      line-height: 1 !important;
+      box-sizing: content-box;
+      overflow: hidden;
+      white-space: nowrap;
+      direction: ltr;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-body antialiased selection:bg-light-primary-container selection:text-light-on-primary">
+  <div class="min-h-screen flex bg-light-surface dark:bg-dark-surface">
+
+    <!-- Persistent Desktop Sidebar (Shell Parity with DashboardDesktop) -->
+    <aside class="w-64 min-h-screen bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border-r border-light-outline-variant dark:border-dark-outline-variant p-gutter-xl flex flex-col justify-between shrink-0">
+      <div class="flex flex-col gap-gutter-xl">
+        <div class="flex items-center gap-gutter-sm">
+          <div class="w-10 h-10 rounded-md bg-light-primary dark:bg-dark-primary flex items-center justify-center text-light-on-primary dark:text-dark-on-primary shadow-sm">
+            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">account_balance_wallet</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface leading-tight" data-design-text-token="headline-md">SubPulse</span>
+            <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Alex &amp; Sam · USD</span>
+          </div>
+        </div>
+
+        <nav aria-label="Primary navigation" class="flex flex-col gap-gutter-xs">
+          <a href="../dashboard-desktop/DashboardDesktop.html" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">home</span>
+            <span data-design-text-token="label-lg">Dashboard</span>
+          </a>
+          <a href="../subscriptions/SubscriptionsList.html" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">credit_card</span>
+            <span data-design-text-token="label-lg">All plans</span>
+          </a>
+          <a href="#insights" aria-current="page" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &#39;FILL&#39; 1;" aria-hidden="true">bar_chart</span>
+            <span data-design-text-token="label-lg">Insights</span>
+          </a>
+          <a href="../household/HouseholdSharing.html" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">group</span>
+            <span data-design-text-token="label-lg">Household</span>
+          </a>
+          <a href="../notifications/NotificationCenter.html" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">notifications</span>
+            <span data-design-text-token="label-lg">Alerts</span>
+          </a>
+          <a href="../settings/SettingsSecurity.html" class="flex items-center gap-gutter-md min-h-[44px] px-3.5 rounded-md text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low font-label text-label-lg">
+            <span class="material-symbols-outlined text-[20px]" aria-hidden="true">settings</span>
+            <span data-design-text-token="label-lg">Settings</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- COMPONENT: button-primary -->
+      <a href="../subscription-edit/SubscriptionEdit.html" data-component-id="button-primary" data-component-type="button" data-component-variant="primary" class="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg">
+        <span class="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
+        <span data-design-text-token="label-lg">Add subscription</span>
+      </a>
+    </aside>
+
+    <!-- Main Desktop Workspace -->
+    <main class="flex-1 p-gutter-xl max-w-[1040px] flex flex-col gap-gutter-xl">
+
+      <header class="flex items-center justify-between gap-gutter-md">
+        <div>
+          <h1 class="font-headline text-headline-lg text-light-on-surface dark:text-dark-on-surface" data-design-text-token="headline-lg">Insights &amp; budget</h1>
+          <p class="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-md">2026 spend trend, category caps, and overlap detection</p>
+        </div>
+        <button type="button" class="min-h-[44px] px-4 py-2 rounded-md bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-label text-label-sm inline-flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">ios_share</span>
+          <span data-design-text-token="label-sm">Export PDF</span>
+        </button>
+      </header>
+
+      <!-- 3-Up KPI Row -->
+      <section aria-label="Insights summary" class="grid grid-cols-3 gap-gutter-lg items-stretch">
+        <article class="h-full rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md">
+          <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Daily cost</span>
+          <p class="font-headline text-headline-lg text-light-on-surface dark:text-dark-on-surface tabular-nums" data-design-text-token="headline-lg">$6.07</p>
+          <span class="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="body-sm">$42.58 / week equivalent</span>
+        </article>
+
+        <article class="h-full rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md">
+          <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Saved YTD</span>
+          <p class="font-headline text-headline-lg text-success tabular-nums" data-design-text-token="headline-lg">$312.00</p>
+          <span class="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-sm">From 4 cancelled plans</span>
+        </article>
+
+        <article class="h-full rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md">
+          <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">12-month forecast</span>
+          <p class="font-headline text-headline-lg text-light-on-surface dark:text-dark-on-surface tabular-nums" data-design-text-token="headline-lg">$2,214.00</p>
+          <span class="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-sm">Assumes current active plans</span>
+        </article>
+      </section>
+
+      <!-- 2-Column Split: Spend Trend Chart + Category Breakdown & Overlap -->
+      <section aria-label="Trend and categories" class="grid grid-cols-12 gap-gutter-xl items-start">
+
+        <!-- Left 7 cols: 6-Month Spend Trend -->
+        <article class="col-span-7 rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="font-headline text-headline-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="headline-md">6-month spend trend</h2>
+              <p class="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-sm">Jun – Nov 2026 · $250.00 monthly cap</p>
+            </div>
+            <span class="font-mono text-mono-sm text-light-primary dark:text-dark-primary tabular-nums" data-design-text-token="mono-sm">Avg $176.20</span>
+          </div>
+
+          <div class="grid grid-cols-6 gap-gutter-md items-end h-56 pt-4">
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$155</span>
+              <div class="w-full rounded-t-md bg-light-surface-container-high dark:bg-dark-surface-container-high h-[62%]"></div>
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="mono-sm">Jun</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$170</span>
+              <div class="w-full rounded-t-md bg-light-surface-container-high dark:bg-dark-surface-container-high h-[68%]"></div>
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="mono-sm">Jul</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$180</span>
+              <div class="w-full rounded-t-md bg-light-surface-container-high dark:bg-dark-surface-container-high h-[72%]"></div>
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="mono-sm">Aug</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$162</span>
+              <div class="w-full rounded-t-md bg-light-surface-container-high dark:bg-dark-surface-container-high h-[65%]"></div>
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="mono-sm">Sep</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$178</span>
+              <div class="w-full rounded-t-md bg-light-surface-container-high dark:bg-dark-surface-container-high h-[71%]"></div>
+              <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="mono-sm">Oct</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 h-full justify-end">
+              <span class="font-mono text-mono-sm text-light-primary dark:text-dark-primary tabular-nums" data-design-text-token="mono-sm">$185</span>
+              <div class="w-full rounded-t-md bg-light-primary dark:bg-dark-primary h-[74%]"></div>
+              <span class="font-mono text-mono-sm text-light-primary dark:text-dark-primary" data-design-text-token="mono-sm">Nov</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Right 5 cols: Category Breakdown & Overlap -->
+        <div class="col-span-5 flex flex-col gap-gutter-lg">
+          <article class="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-xl shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md">
+            <h2 class="font-title text-title-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="title-md">Category breakdown</h2>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-body text-body-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="body-md">Productivity &amp; AI</span>
+                <span class="font-mono text-mono-sm text-light-tertiary dark:text-dark-tertiary tabular-nums" data-design-text-token="mono-sm">$74.00 / $75</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-light-surface-container dark:bg-dark-surface-container overflow-hidden">
+                <div class="h-full w-[98%] rounded-full bg-accent"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-body text-body-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="body-md">Entertainment</span>
+                <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$62.97 / $80</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-light-surface-container dark:bg-dark-surface-container overflow-hidden">
+                <div class="h-full w-[79%] rounded-full bg-light-primary dark:bg-dark-primary"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <span class="font-body text-body-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="body-md">Cloud &amp; Utilities</span>
+                <span class="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums" data-design-text-token="mono-sm">$47.53 / $95</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-light-surface-container dark:bg-dark-surface-container overflow-hidden">
+                <div class="h-full w-[50%] rounded-full bg-success"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="rounded-xl bg-light-error-container dark:bg-dark-error-container p-gutter-lg flex items-start gap-gutter-md">
+            <span class="material-symbols-outlined text-[22px] text-light-on-error-container dark:text-dark-on-error-container shrink-0 mt-0.5" aria-hidden="true">warning</span>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-title text-title-md text-light-on-error-container dark:text-dark-on-error-container" data-design-text-token="title-md">Overlapping storage</h3>
+              <p class="font-body text-body-sm text-light-on-error-container dark:text-dark-on-error-container text-pretty" data-design-text-token="body-sm">
+                iCloud+ 2TB and Google One 2TB both cost $9.99/mo. Consolidating saves $119.88/yr.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+
+</body></html>

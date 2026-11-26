@@ -1,0 +1,310 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Edit Subscription — SubPulse</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config" data-stitch-original-src="5338193b73612fde===../../tailwind.config.js">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#E11D48',
+        'on-accent': '#FFFFFF',
+        'success': '#15803D',
+        'on-success': '#FFFFFF',
+        'success-container': '#DCFCE7',
+        'on-success-container': '#14532D',
+        'warning': '#B45309',
+        'on-warning': '#FFFFFF',
+        'warning-container': '#FEF3C7',
+        'on-warning-container': '#78350F',
+        'light-primary': '#0037B0',
+        'light-on-primary': '#FFFFFF',
+        'light-primary-container': '#1D4ED8',
+        'light-on-primary-container': '#CAD3FF',
+        'light-secondary': '#4D5B94',
+        'light-on-secondary': '#FFFFFF',
+        'light-secondary-container': '#B0BEFE',
+        'light-on-secondary-container': '#3D4C83',
+        'light-tertiary': '#8E0026',
+        'light-on-tertiary': '#FFFFFF',
+        'light-tertiary-container': '#BA0035',
+        'light-on-tertiary-container': '#FFC7C9',
+        'light-error': '#BA1A1A',
+        'light-on-error': '#FFFFFF',
+        'light-error-container': '#FFDAD6',
+        'light-on-error-container': '#93000A',
+        'light-background': '#FAF8FF',
+        'light-on-background': '#1A1B23',
+        'light-surface': '#FAF8FF',
+        'light-surface-dim': '#D9D9E5',
+        'light-surface-bright': '#FAF8FF',
+        'light-surface-container-lowest': '#FFFFFF',
+        'light-surface-container-low': '#F3F2FE',
+        'light-surface-container': '#EDEDF9',
+        'light-surface-container-high': '#E8E7F3',
+        'light-surface-container-highest': '#E2E1ED',
+        'light-on-surface': '#1A1B23',
+        'light-surface-variant': '#E0E1F4',
+        'light-on-surface-variant': '#434655',
+        'light-outline': '#747686',
+        'light-outline-variant': '#C4C5D7',
+        'light-inverse-surface': '#2E3039',
+        'light-inverse-on-surface': '#F0F0FB',
+        'light-inverse-primary': '#B7C4FF',
+        'dark-primary': '#B7C4FF',
+        'dark-on-primary': '#002682',
+        'dark-primary-container': '#1D4ED8',
+        'dark-on-primary-container': '#CAD3FF',
+        'dark-secondary': '#B7C4FF',
+        'dark-on-secondary': '#1D2C63',
+        'dark-secondary-container': '#35437B',
+        'dark-on-secondary-container': '#A4B2F1',
+        'dark-tertiary': '#FFB3B6',
+        'dark-on-tertiary': '#68001A',
+        'dark-tertiary-container': '#BA0035',
+        'dark-on-tertiary-container': '#FFC7C9',
+        'dark-error': '#FFB4AB',
+        'dark-on-error': '#690005',
+        'dark-error-container': '#93000A',
+        'dark-on-error-container': '#FFDAD6',
+        'dark-background': '#11131B',
+        'dark-on-background': '#E2E1ED',
+        'dark-surface': '#11131B',
+        'dark-surface-dim': '#11131B',
+        'dark-surface-bright': '#373942',
+        'dark-surface-container-lowest': '#0C0E16',
+        'dark-surface-container-low': '#1A1B23',
+        'dark-surface-container': '#1E1F27',
+        'dark-surface-container-high': '#282932',
+        'dark-surface-container-highest': '#33343D',
+        'dark-on-surface': '#E2E1ED',
+        'dark-surface-variant': '#434655',
+        'dark-on-surface-variant': '#C4C5D7',
+        'dark-outline': '#8E90A0',
+        'dark-outline-variant': '#434655',
+        'dark-inverse-surface': '#E2E1ED',
+        'dark-inverse-on-surface': '#2E3039',
+        'dark-inverse-primary': '#2151DA',
+      },
+      borderRadius: {
+        'sm': '6px',
+        'DEFAULT': '10px',
+        'md': '14px',
+        'lg': '16px',
+        'xl': '24px',
+        'full': '9999px',
+      },
+      spacing: {
+        'gutter-xs': '4px',
+        'gutter-sm': '8px',
+        'gutter-md': '12px',
+        'gutter-lg': '16px',
+        'gutter-xl': '24px',
+        'page-margin': '20px',
+        'section': '32px',
+      },
+      fontFamily: {
+        'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'headline': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'title': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'body': ['"Instrument Sans"', 'sans-serif'],
+        'label': ['"Instrument Sans"', 'sans-serif'],
+        'mono': ['"Source Code Pro"', 'monospace'],
+      },
+      fontSize: {
+        'display-lg': ['40px', { lineHeight: '44px', letterSpacing: '-0.75px', fontWeight: '700' }],
+        'display-lg-mobile': ['32px', { lineHeight: '36px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg': ['36px', { lineHeight: '42px', letterSpacing: '-0.5px', fontWeight: '700' }],
+        'headline-lg-mobile': ['24px', { lineHeight: '30px', letterSpacing: '-0.25px', fontWeight: '700' }],
+        'headline-md': ['20px', { lineHeight: '26px', letterSpacing: '-0.2px', fontWeight: '700' }],
+        'title-md': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '600' }],
+        'body-md': ['15px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '400' }],
+        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0.1px', fontWeight: '600' }],
+        'label-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '600' }],
+        'mono-md': ['15px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '600' }],
+        'mono-sm': ['12px', { lineHeight: '16px', letterSpacing: '0px', fontWeight: '500' }],
+      },
+      transitionDuration: {
+        'state-change': '120ms',
+        'surface-enter': '240ms',
+        'surface-exit': '160ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'surface-exit': '0ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'ease-out',
+        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+        'surface-exit': 'cubic-bezier(0.3, 0, 1, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;family=Source+Code+Pro:wght@500;600&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+  <style>
+    .material-symbols-outlined, .material-symbols-rounded, .material-symbols-sharp, .material-icons {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      line-height: 1 !important;
+      box-sizing: content-box;
+      overflow: hidden;
+      white-space: nowrap;
+      direction: ltr;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface font-body antialiased selection:bg-light-primary-container selection:text-light-on-primary">
+  <div class="min-h-screen flex flex-col max-w-[430px] mx-auto pb-12">
+
+    <!-- Task Flow Header (Back button, Title, Save) -->
+    <header class="px-page-margin pt-gutter-lg pb-gutter-md flex items-center justify-between gap-gutter-sm sticky top-0 z-20 bg-light-surface dark:bg-dark-surface">
+      <a href="../subscription-detail/SubscriptionDetail.html" aria-label="Cancel editing" class="inline-flex items-center justify-center w-11 h-11 rounded-full bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest text-light-on-surface dark:text-dark-on-surface border border-light-outline-variant dark:border-dark-outline-variant transition-colors duration-state-change ease-state-change hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low">
+        <span class="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
+      </a>
+
+      <h1 class="font-headline text-title-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="title-md">Edit subscription</h1>
+
+      <!-- COMPONENT: button-primary -->
+      <button data-component-id="button-primary" data-component-type="button" data-component-variant="primary" type="submit" form="subscription-form" class="inline-flex items-center justify-center min-h-[44px] px-5 py-2 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg transition-colors duration-state-change ease-state-change hover:opacity-90 active:scale-[0.98]">
+        <span data-design-text-token="label-lg">Save</span>
+      </button>
+    </header>
+
+    <main class="px-page-margin flex-1">
+      <form id="subscription-form" action="#" method="post" class="flex flex-col gap-gutter-lg">
+
+        <!-- Core Service Info Card -->
+        <section aria-label="Service details" class="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md">
+          <div class="flex flex-col gap-1.5">
+            <label for="sub-name" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Service name</label>
+            <input id="sub-name" type="text" value="Spotify Family" required class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+          </div>
+
+          <div class="grid grid-cols-2 gap-gutter-md">
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-price" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Price</label>
+              <input id="sub-price" type="number" step="0.01" value="19.99" required class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-mono text-title-md tabular-nums focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-currency" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Currency</label>
+              <select id="sub-currency" class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+                <option value="USD" selected>USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="CAD">CAD ($)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-gutter-md">
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-category" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Category</label>
+              <select id="sub-category" class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+                <option value="entertainment" selected>Entertainment</option>
+                <option value="productivity">Productivity &amp; AI</option>
+                <option value="cloud">Cloud &amp; Utilities</option>
+                <option value="fitness">Fitness</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-status" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Status</label>
+              <select id="sub-status" class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+                <option value="active" selected>Active</option>
+                <option value="trial">Free trial</option>
+                <option value="paused">Paused</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- Billing Cycle & Dates -->
+        <section aria-label="Billing schedule" class="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md">
+          <div class="flex flex-col gap-1.5">
+            <span class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Billing cycle</span>
+            <div class="flex flex-wrap gap-gutter-sm">
+              <button type="button" class="cycle-chip min-h-[36px] px-3.5 py-1.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface-variant dark:text-dark-on-surface-variant border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm">Weekly</button>
+              <button type="button" class="cycle-chip min-h-[36px] px-3.5 py-1.5 rounded-full bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-sm">Monthly</button>
+              <button type="button" class="cycle-chip min-h-[36px] px-3.5 py-1.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface-variant dark:text-dark-on-surface-variant border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm">Quarterly</button>
+              <button type="button" class="cycle-chip min-h-[36px] px-3.5 py-1.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-on-surface-variant dark:text-dark-on-surface-variant border border-light-outline-variant dark:border-dark-outline-variant font-label text-label-sm">Yearly</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-gutter-md">
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-next-date" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Next billing date</label>
+              <input id="sub-next-date" type="date" value="2026-11-29" class="w-full min-h-[44px] px-3 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-mono text-title-md tabular-nums focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="sub-reminder" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Remind me</label>
+              <select id="sub-reminder" class="w-full min-h-[44px] px-3 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+                <option value="1">1 day before</option>
+                <option value="3" selected>3 days before</option>
+                <option value="7">7 days before</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Shared Cost Split -->
+          <div class="flex items-center justify-between gap-gutter-md pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant">
+            <div class="flex flex-col">
+              <span class="font-title text-title-md text-light-on-surface dark:text-dark-on-surface" data-design-text-token="title-md">Shared household split</span>
+              <span class="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="body-sm">Divided across 4 members ($4.99 each)</span>
+            </div>
+            <input id="shared-toggle" type="checkbox" checked aria-label="Enable shared household split" class="w-6 h-6 rounded-sm text-light-primary focus:ring-light-primary border-light-outline-variant">
+          </div>
+        </section>
+
+        <!-- Account Link & Notes -->
+        <section aria-label="Account link and notes" class="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md">
+          <div class="flex flex-col gap-1.5">
+            <label for="sub-url" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Manage or cancel link</label>
+            <input id="sub-url" type="url" value="https://www.spotify.com/account" class="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="sub-notes" class="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant" data-design-text-token="label-sm">Notes</label>
+            <textarea id="sub-notes" rows="2" class="w-full px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:ring-1 focus:ring-light-primary">Billed to Alex&#39;s Apple Pay. Never store service passwords here.</textarea>
+          </div>
+        </section>
+
+        <!-- Destructive Archive / Delete -->
+        <button type="button" class="w-full min-h-[48px] px-5 py-3 rounded-md bg-light-error-container dark:bg-dark-error-container text-light-on-error-container dark:text-dark-on-error-container font-label text-label-lg transition-opacity duration-state-change ease-state-change hover:opacity-90">
+          <span data-design-text-token="label-lg">Archive subscription</span>
+        </button>
+
+      </form>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const cycleChips = document.querySelectorAll('.cycle-chip');
+      cycleChips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          cycleChips.forEach(function (c) {
+            c.classList.remove('bg-light-primary', 'dark:bg-dark-primary', 'text-light-on-primary', 'dark:text-dark-on-primary');
+            c.classList.add('bg-light-surface-container-low', 'dark:bg-dark-surface-container-low', 'text-light-on-surface-variant', 'dark:text-dark-on-surface-variant', 'border', 'border-light-outline-variant', 'dark:border-dark-outline-variant');
+          });
+          chip.classList.remove('bg-light-surface-container-low', 'dark:bg-dark-surface-container-low', 'text-light-on-surface-variant', 'dark:text-dark-on-surface-variant', 'border', 'border-light-outline-variant', 'dark:border-dark-outline-variant');
+          chip.classList.add('bg-light-primary', 'dark:bg-dark-primary', 'text-light-on-primary', 'dark:text-dark-on-primary');
+        });
+      });
+    })();
+  </script>
+
+
+</body></html>
