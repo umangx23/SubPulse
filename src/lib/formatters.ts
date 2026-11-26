@@ -2,6 +2,7 @@ import { BillingCycle, CurrencyCode, Subscription } from '../types/subpulse';
 
 const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
   USD: '$',
+  INR: '₹',
   EUR: '€',
   GBP: '£',
   CAD: 'CA$',
@@ -14,7 +15,8 @@ export function getCurrencySymbol(currency: CurrencyCode): string {
 export function formatMoney(amount: number, currency: CurrencyCode = 'USD'): string {
   const sym = getCurrencySymbol(currency);
   const abs = Math.abs(amount);
-  const formatted = abs.toLocaleString('en-US', {
+  const locale = currency === 'INR' ? 'en-IN' : 'en-US';
+  const formatted = abs.toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

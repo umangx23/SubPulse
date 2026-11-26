@@ -8,7 +8,7 @@ export type SubscriptionCategory =
   | 'Cloud & Utilities'
   | 'Fitness';
 
-export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'CAD';
+export type CurrencyCode = 'USD' | 'INR' | 'EUR' | 'GBP' | 'CAD';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 

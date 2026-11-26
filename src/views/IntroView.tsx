@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { SPRING_SNAPPY, triggerHaptic } from '../lib/haptics';
 
 interface IntroViewProps {
   onStartSetup: () => void;
@@ -67,6 +69,7 @@ export const IntroView: React.FC<IntroViewProps> = ({
   const isLast = slideIndex === SLIDES.length - 1;
 
   const handleNext = () => {
+    triggerHaptic(8);
     if (isLast) {
       onStartSetup();
     } else {
@@ -104,47 +107,69 @@ export const IntroView: React.FC<IntroViewProps> = ({
       </header>
 
       {/* Slide Content */}
-      <main className="flex flex-col gap-gutter-xl my-auto py-gutter-lg">
-        <section className="flex flex-col gap-gutter-lg">
-          <div className="flex items-center justify-between">
-            <div className="w-16 h-16 rounded-2xl bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary flex items-center justify-center shadow-md">
-              <span className="material-symbols-outlined text-[32px]" aria-hidden="true">
-                {slide.icon}
-              </span>
-            </div>
-            <span className="px-3 py-1 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm">
-              {slide.badge}
-            </span>
-          </div>
+      <main className="flex flex-col gap-gutter-xl my-auto py-gutter-lg overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col gap-gutter-xl"
+          >
+            <section className="flex flex-col gap-gutter-lg">
+              <div className="flex items-center justify-between">
+                <motion.div
+                  initial={{ scale: 0.85, rotate: -6 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={SPRING_SNAPPY}
+                  className="w-16 h-16 rounded-2xl bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary flex items-center justify-center shadow-md"
+                >
+                  <span className="material-symbols-outlined text-[32px]" aria-hidden="true">
+                    {slide.icon}
+                  </span>
+                </motion.div>
+                <span className="px-3 py-1 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm">
+                  {slide.badge}
+                </span>
+              </div>
 
-          <div className="flex flex-col gap-gutter-sm">
-            <h1 className="font-headline text-display-lg-mobile text-light-on-surface dark:text-dark-on-surface text-balance">
-              {slide.title}
-            </h1>
-            <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant text-pretty">
-              {slide.description}
-            </p>
-          </div>
-        </section>
+              <div className="flex flex-col gap-gutter-sm">
+                <h1 className="font-headline text-display-lg-mobile text-light-on-surface dark:text-dark-on-surface text-balance">
+                  {slide.title}
+                </h1>
+                <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant text-pretty">
+                  {slide.description}
+                </p>
+              </div>
+            </section>
 
-        <section
-          aria-label="Key capabilities"
-          className="rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md"
-        >
-          {slide.highlights.map((item) => (
-            <div key={item} className="flex items-center gap-gutter-sm">
-              <span
-                className="w-6 h-6 rounded-full bg-success-container text-on-success-container flex items-center justify-center shrink-0"
-                aria-hidden="true"
-              >
-                <span className="material-symbols-outlined text-[15px]">check</span>
-              </span>
-              <span className="font-body text-body-sm text-light-on-surface dark:text-dark-on-surface">
-                {item}
-              </span>
-            </div>
-          ))}
-        </section>
+            <section
+              aria-label="Key capabilities"
+              className="sp-card rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col gap-gutter-md"
+            >
+              {slide.highlights.map((item, idx) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05, duration: 0.2 }}
+                  className="flex items-center gap-gutter-sm"
+                >
+                  <span
+                    className="w-6 h-6 rounded-full bg-success-container text-on-success-container flex items-center justify-center shrink-0"
+                    aria-hidden="true"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">check</span>
+                  </span>
+                  <span className="font-body text-body-sm text-light-on-surface dark:text-dark-on-surface">
+                    {item}
+                  </span>
+                </motion.div>
+              ))}
+            </section>
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Navigation & Secondary Actions */}

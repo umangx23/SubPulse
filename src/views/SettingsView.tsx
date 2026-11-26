@@ -269,9 +269,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               className="min-h-[40px] px-3 py-1 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant font-mono text-mono-md text-light-primary dark:text-dark-primary"
             >
               <option value="USD">USD ($)</option>
+              <option value="INR">INR (₹)</option>
               <option value="EUR">EUR (€)</option>
               <option value="GBP">GBP (£)</option>
               <option value="CAD">CAD ($)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between gap-gutter-sm pt-gutter-sm border-t border-light-outline-variant dark:border-dark-outline-variant">
+            <label htmlFor="settings-country" className="font-body text-body-md text-light-on-surface dark:text-dark-on-surface">
+              Country / Region
+            </label>
+            <select
+              id="settings-country"
+              value={settings.country || 'United States'}
+              onChange={(e) => {
+                onUpdateSettings({ country: e.target.value });
+                onShowToast(`Country set to ${e.target.value}`);
+              }}
+              className="min-h-[40px] px-3 py-1 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant font-body text-body-md text-light-on-surface dark:text-dark-on-surface"
+            >
+              <option value="India">India</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="European Union">European Union</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 

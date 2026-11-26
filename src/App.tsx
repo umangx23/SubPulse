@@ -424,6 +424,7 @@ export default function App() {
     return (
       <OnboardingView
         initialCurrency={store.settings.currency}
+        initialCountry={store.settings.country}
         initialBudgetCap={store.settings.monthlyBudgetCap}
         initialWorkspaceName={store.settings.workspaceName}
         initialUserName={store.settings.userName === 'Guest' ? '' : store.settings.userName}

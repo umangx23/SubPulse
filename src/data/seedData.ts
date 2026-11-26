@@ -15,6 +15,9 @@ const detectedTimezone =
     ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
     : 'America/New_York';
 
+const isIndiaLocale =
+  detectedTimezone === 'Asia/Kolkata' || detectedTimezone === 'Asia/Calcutta';
+
 export const INITIAL_STORE: SubPulseStore = {
   hasCompletedOnboarding: false,
   isSignedIn: false,
@@ -24,12 +27,12 @@ export const INITIAL_STORE: SubPulseStore = {
     userName: 'Guest',
     userInitials: 'SP',
     userEmail: '',
-    currency: 'USD',
-    country: 'United States',
+    currency: isIndiaLocale ? 'INR' : 'USD',
+    country: isIndiaLocale ? 'India' : 'United States',
     timezone: detectedTimezone,
     theme: 'dark',
-    monthlyBudgetCap: 250.0,
-    annualTrimGoal: 500.0,
+    monthlyBudgetCap: isIndiaLocale ? 5000.0 : 250.0,
+    annualTrimGoal: isIndiaLocale ? 15000.0 : 500.0,
     savedYtd: 0,
     cancelledCountYtd: 0,
     passkeyLockEnabled: false,
@@ -40,12 +43,19 @@ export const INITIAL_STORE: SubPulseStore = {
     quietHoursEnd: '08:00',
     aiFeaturesEnabled: false,
     geminiApiKey: '',
-    categoryCaps: {
-      'Productivity & AI': 75,
-      Entertainment: 80,
-      'Cloud & Utilities': 95,
-      Fitness: 50,
-    },
+    categoryCaps: isIndiaLocale
+      ? {
+          'Productivity & AI': 2000,
+          Entertainment: 1500,
+          'Cloud & Utilities': 1000,
+          Fitness: 1500,
+        }
+      : {
+          'Productivity & AI': 75,
+          Entertainment: 80,
+          'Cloud & Utilities': 95,
+          Fitness: 50,
+        },
   },
   members: [],
   alerts: [],

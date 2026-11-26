@@ -1,4 +1,6 @@
 import React from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { SPRING_SNAPPY, triggerHaptic } from '../lib/haptics';
 import { AppSettings, AppView } from '../types/subpulse';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -53,14 +55,21 @@ export const Shell: React.FC<ShellProps> = ({
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen flex flex-col lg:flex-row bg-light-surface dark:bg-dark-surface text-light-on-surface dark:text-dark-on-surface">
       {/* Persistent Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 min-h-screen bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border-r border-light-outline-variant dark:border-dark-outline-variant p-gutter-xl flex-col justify-between shrink-0 sticky top-0 h-screen">
         <div className="flex flex-col gap-gutter-xl">
           {/* Brand */}
-          <button
+          <motion.button
             type="button"
-            onClick={() => onNavigate('dashboard')}
+            whileHover={{ x: 2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={SPRING_SNAPPY}
+            onClick={() => {
+              triggerHaptic(8);
+              onNavigate('dashboard');
+            }}
             className="flex items-center gap-gutter-sm text-left"
           >
             <div className="w-10 h-10 rounded-md bg-light-primary dark:bg-dark-primary flex items-center justify-center text-light-on-primary dark:text-dark-on-primary shadow-sm shrink-0">
@@ -76,7 +85,7 @@ export const Shell: React.FC<ShellProps> = ({
                 {settings.workspaceName} · {settings.currency}
               </span>
             </div>
-          </button>
+          </motion.button>
 
           {/* Sidebar Nav */}
           <nav aria-label="Primary navigation" className="flex flex-col gap-gutter-xs">
@@ -86,18 +95,31 @@ export const Shell: React.FC<ShellProps> = ({
                 (item.id === 'subscriptions' && (currentView === 'detail' || currentView === 'edit')) ||
                 (item.id === 'analytics' && currentView === 'savings');
               return (
-                <button
+                <motion.button
                   key={item.id}
                   type="button"
-                  onClick={() => onNavigate(item.id)}
+                  whileHover={{ x: 4 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={SPRING_SNAPPY}
+                  onClick={() => {
+                    triggerHaptic(8);
+                    onNavigate(item.id);
+                  }}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex items-center justify-between gap-gutter-md min-h-[44px] px-3.5 rounded-md font-label text-label-lg transition-colors duration-state-change ease-state-change whitespace-nowrap ${
+                  className={`relative flex items-center justify-between gap-gutter-md min-h-[44px] px-3.5 rounded-md font-label text-label-lg transition-colors duration-state-change ease-state-change whitespace-nowrap ${
                     active
-                      ? 'bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary'
-                      : 'text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low dark:hover:bg-dark-surface-container-low'
+                      ? 'text-light-primary dark:text-dark-primary'
+                      : 'text-light-on-surface-variant dark:text-dark-on-surface-variant hover:bg-light-surface-container-low/60 dark:hover:bg-dark-surface-container-low/60'
                   }`}
                 >
-                  <span className="flex items-center gap-gutter-md">
+                  {active && (
+                    <motion.span
+                      layoutId="desktop-nav-pill"
+                      transition={SPRING_SNAPPY}
+                      className="absolute inset-0 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low -z-0"
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-gutter-md">
                     <span
                       className={`material-symbols-outlined text-[20px] ${active ? 'filled' : ''}`}
                       aria-hidden="true"
@@ -107,11 +129,16 @@ export const Shell: React.FC<ShellProps> = ({
                     <span>{item.label}</span>
                   </span>
                   {item.id === 'notifications' && unreadAlertsCount > 0 && (
-                    <span className="font-mono text-mono-sm text-accent tabular-nums">
+                    <motion.span
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: [1, 1.15, 1] }}
+                      transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2 }}
+                      className="relative z-10 font-mono text-mono-sm text-accent tabular-nums"
+                    >
                       {unreadAlertsCount}
-                    </span>
+                    </motion.span>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </nav>
@@ -119,106 +146,157 @@ export const Shell: React.FC<ShellProps> = ({
 
         <div className="flex flex-col gap-gutter-sm">
           <PWAInstallButton />
-          <button
+          <motion.button
             type="button"
-            onClick={onAddNew}
-            className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg whitespace-nowrap hover:opacity-90 active:scale-[0.98] transition-all"
+            whileHover={{ y: -2, scale: 1.015 }}
+            whileTap={{ scale: 0.97 }}
+            transition={SPRING_SNAPPY}
+            onClick={() => {
+              triggerHaptic(10);
+              onAddNew();
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2.5 rounded-md bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary font-label text-label-lg whitespace-nowrap shadow-sm hover:shadow-md transition-shadow"
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
             <span>Add subscription</span>
-          </button>
+          </motion.button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 pb-24 lg:pb-10">
-        {isOffline && (
-          <div
-            role="status"
-            className="bg-warning-container text-on-warning-container px-page-margin lg:px-gutter-xl py-2.5 flex items-center justify-between gap-gutter-sm"
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">cloud_off</span>
-              <span className="font-label text-label-sm">Offline · Saved locally in IndexedDB</span>
-            </div>
-            <button
-              type="button"
-              onClick={onRetryConnection}
-              className="font-label text-label-sm underline min-h-[32px] px-2"
+        <AnimatePresence>
+          {isOffline && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              role="status"
+              className="bg-warning-container text-on-warning-container px-page-margin lg:px-gutter-xl py-2.5 flex items-center justify-between gap-gutter-sm overflow-hidden"
             >
-              Retry
-            </button>
-          </div>
-        )}
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">cloud_off</span>
+                <span className="font-label text-label-sm">Offline · Saved locally in IndexedDB</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic(8);
+                  onRetryConnection();
+                }}
+                className="font-label text-label-sm underline min-h-[32px] px-2"
+              >
+                Retry
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="w-full max-w-[430px] lg:max-w-[1040px] mx-auto lg:mx-0 flex-1 flex flex-col">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 flex flex-col"
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Undo / Feedback Snackbar */}
-      {snackbarMessage && (
-        <div className="fixed bottom-20 lg:bottom-6 left-4 right-4 lg:left-auto lg:right-6 lg:w-96 z-40">
-          <div
-            role="alert"
-            className="rounded-lg bg-light-inverse-surface dark:bg-dark-inverse-surface text-light-inverse-on-surface dark:text-dark-inverse-on-surface px-4 py-3 flex items-center justify-between gap-gutter-md shadow-lg"
+      <AnimatePresence>
+        {snackbarMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.95 }}
+            transition={SPRING_SNAPPY}
+            className="fixed bottom-20 lg:bottom-6 left-4 right-4 lg:left-auto lg:right-6 lg:w-96 z-40"
           >
-            <span className="font-body text-body-sm truncate">{snackbarMessage}</span>
-            <div className="flex items-center gap-3 shrink-0">
-              {onUndo && (
+            <div
+              role="alert"
+              className="rounded-lg bg-light-inverse-surface dark:bg-dark-inverse-surface text-light-inverse-on-surface dark:text-dark-inverse-on-surface px-4 py-3 flex items-center justify-between gap-gutter-md shadow-xl"
+            >
+              <span className="font-body text-body-sm truncate">{snackbarMessage}</span>
+              <div className="flex items-center gap-3 shrink-0">
+                {onUndo && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(10);
+                      onUndo();
+                    }}
+                    className="font-label text-label-sm text-light-inverse-primary dark:text-dark-inverse-primary whitespace-nowrap"
+                  >
+                    Undo
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={onUndo}
-                  className="font-label text-label-sm text-light-inverse-primary dark:text-dark-inverse-primary whitespace-nowrap"
+                  onClick={onDismissSnackbar}
+                  aria-label="Dismiss message"
+                  className="text-light-inverse-on-surface/70 dark:text-dark-inverse-on-surface/70 hover:opacity-100"
                 >
-                  Undo
+                  <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={onDismissSnackbar}
-                aria-label="Dismiss message"
-                className="text-light-inverse-on-surface/70 dark:text-dark-inverse-on-surface/70 hover:opacity-100"
-              >
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Bottom Tab Navigation */}
       <nav
         aria-label="Primary navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border-t border-light-outline-variant dark:border-dark-outline-variant pb-[env(safe-area-inset-bottom)]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-light-surface-container-lowest/95 dark:bg-dark-surface-container-lowest/95 backdrop-blur-md border-t border-light-outline-variant dark:border-dark-outline-variant pb-[env(safe-area-inset-bottom)]"
       >
         <div className="max-w-[430px] mx-auto grid grid-cols-4 h-16 px-2">
           {MOBILE_TABS.map((tab) => {
             const active = isNavActive(tab.id);
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 type="button"
-                onClick={() => onNavigate(tab.id)}
+                whileTap={{ scale: 0.9 }}
+                transition={SPRING_SNAPPY}
+                onClick={() => {
+                  triggerHaptic(8);
+                  onNavigate(tab.id);
+                }}
                 aria-current={active ? 'page' : undefined}
-                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                className={`relative flex flex-col items-center justify-center gap-0.5 transition-colors ${
                   active
                     ? 'text-light-primary dark:text-dark-primary'
                     : 'text-light-on-surface-variant dark:text-dark-on-surface-variant hover:text-light-on-surface dark:hover:text-dark-on-surface'
                 }`}
               >
-                <span
+                {active && (
+                  <motion.span
+                    layoutId="mobile-tab-pill"
+                    transition={SPRING_SNAPPY}
+                    className="absolute top-0 w-10 h-0.5 rounded-full bg-light-primary dark:bg-dark-primary"
+                  />
+                )}
+                <motion.span
+                  animate={active ? { y: -1, scale: 1.08 } : { y: 0, scale: 1 }}
+                  transition={SPRING_SNAPPY}
                   className={`material-symbols-outlined text-[22px] ${active ? 'filled' : ''}`}
                   aria-hidden="true"
                 >
                   {tab.icon}
-                </span>
+                </motion.span>
                 <span className="font-label text-label-sm">{tab.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </nav>
     </div>
+    </MotionConfig>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
+import { motion } from 'motion/react';
 import { CalendarWidget } from '../components/CalendarWidget';
 import { REFERENCE_TODAY } from '../data/seedData';
+import { SPRING_SNAPPY, triggerHaptic } from '../lib/haptics';
 import {
   daysBetween,
   downloadFile,
@@ -245,24 +247,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {/* Split Metric Tiles: Spend + Budget */}
           <section aria-label="Spend and budget summary" className="grid grid-cols-2 gap-gutter-md items-stretch">
             {/* Tile 1: Monthly / Yearly Spend */}
-            <article className="h-full rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md">
+            <article className="sp-card h-full rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md">
               <header className="flex items-center justify-between gap-gutter-xs">
                 <h2 className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
                   Spend
                 </h2>
                 <button
                   type="button"
-                  onClick={() => setIsYearly((v) => !v)}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm transition-colors duration-state-change ease-state-change"
+                  onClick={() => {
+                    triggerHaptic(8);
+                    setIsYearly((v) => !v);
+                  }}
+                  className="sp-btn inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm transition-colors duration-state-change ease-state-change"
                 >
                   <span>{isYearly ? 'Yearly' : 'Monthly'}</span>
                   <span className="material-symbols-outlined text-[14px]" aria-hidden="true">swap_horiz</span>
                 </button>
               </header>
               <div className="flex flex-col gap-gutter-xs">
-                <p className="font-headline text-headline-lg-mobile text-light-on-surface dark:text-dark-on-surface tabular-nums">
+                <motion.p
+                  key={isYearly ? 'yr' : 'mo'}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={SPRING_SNAPPY}
+                  className="font-headline text-headline-lg-mobile text-light-on-surface dark:text-dark-on-surface tabular-nums"
+                >
                   {formatMoney(isYearly ? stats.yearlyTotal : stats.monthlyTotal, settings.currency)}
-                </p>
+                </motion.p>
                 <p className="font-body text-body-sm text-light-on-surface-variant dark:text-dark-on-surface-variant tabular-nums">
                   {isYearly
                     ? `${formatMoney(stats.monthlyTotal, settings.currency)} / mo avg.`
@@ -274,9 +285,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Tile 2: Monthly Budget */}
             <button
               type="button"
-              onClick={() => setBudgetDrawerOpen((v) => !v)}
+              onClick={() => {
+                triggerHaptic(8);
+                setBudgetDrawerOpen((v) => !v);
+              }}
               aria-expanded={budgetDrawerOpen}
-              className="h-full text-left rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md cursor-pointer transition-transform duration-state-change ease-state-change active:scale-[0.98]"
+              className="sp-card h-full text-left rounded-xl bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest p-gutter-lg shadow-[0_4px_20px_-2px_rgba(26,27,35,0.06)] flex flex-col justify-between gap-gutter-md cursor-pointer"
             >
               <header className="flex items-center justify-between gap-gutter-xs w-full">
                 <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
@@ -288,11 +302,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </header>
               <div className="flex flex-col gap-gutter-sm w-full">
                 <div className="w-full h-2 rounded-full bg-light-surface-container dark:bg-dark-surface-container overflow-hidden">
-                  <div
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stats.budgetPct}%` }}
+                    transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                     className={`h-full rounded-full ${
                       stats.budgetPct > 90 ? 'bg-accent' : 'bg-light-primary dark:bg-dark-primary'
                     }`}
-                    style={{ width: `${stats.budgetPct}%` }}
                   />
                 </div>
                 <div className="flex items-center justify-between gap-gutter-xs">

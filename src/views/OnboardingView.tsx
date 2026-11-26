@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { PWAInstallButton } from '../components/PWAInstallButton';
+import { SPRING_SNAPPY, triggerHaptic } from '../lib/haptics';
 import { CurrencyCode, SubscriptionCategory } from '../types/subpulse';
 
 export interface SetupCompletionPayload {
@@ -20,6 +22,7 @@ export interface SetupCompletionPayload {
 
 interface OnboardingViewProps {
   initialCurrency?: CurrencyCode;
+  initialCountry?: string;
   initialBudgetCap?: number;
   initialWorkspaceName?: string;
   initialUserName?: string;
@@ -32,31 +35,34 @@ interface PopularServiceTemplate {
   name: string;
   category: SubscriptionCategory;
   price: number;
+  inrPrice: number;
   icon: string;
 }
 
 const POPULAR_SERVICES: PopularServiceTemplate[] = [
-  { name: 'Netflix', category: 'Entertainment', price: 15.99, icon: 'movie' },
-  { name: 'Spotify', category: 'Entertainment', price: 11.99, icon: 'music_note' },
-  { name: 'iCloud+', category: 'Cloud & Utilities', price: 9.99, icon: 'cloud' },
-  { name: 'YouTube Premium', category: 'Entertainment', price: 13.99, icon: 'play_circle' },
-  { name: 'ChatGPT Plus', category: 'Productivity & AI', price: 20.0, icon: 'auto_awesome' },
-  { name: 'Amazon Prime', category: 'Entertainment', price: 14.99, icon: 'local_shipping' },
-  { name: 'Apple One', category: 'Cloud & Utilities', price: 19.95, icon: 'apps' },
-  { name: 'Gym / Fitness', category: 'Fitness', price: 34.99, icon: 'fitness_center' },
+  { name: 'Netflix', category: 'Entertainment', price: 15.99, inrPrice: 649, icon: 'movie' },
+  { name: 'Spotify', category: 'Entertainment', price: 11.99, inrPrice: 119, icon: 'music_note' },
+  { name: 'iCloud+', category: 'Cloud & Utilities', price: 9.99, inrPrice: 75, icon: 'cloud' },
+  { name: 'YouTube Premium', category: 'Entertainment', price: 13.99, inrPrice: 149, icon: 'play_circle' },
+  { name: 'ChatGPT Plus', category: 'Productivity & AI', price: 20.0, inrPrice: 1950, icon: 'auto_awesome' },
+  { name: 'Amazon Prime', category: 'Entertainment', price: 14.99, inrPrice: 299, icon: 'local_shipping' },
+  { name: 'Apple One', category: 'Cloud & Utilities', price: 19.95, inrPrice: 195, icon: 'apps' },
+  { name: 'JioHotstar', category: 'Entertainment', price: 9.99, inrPrice: 299, icon: 'live_tv' },
 ];
 
 const CURRENCIES: Array<{ code: CurrencyCode; label: string }> = [
+  { code: 'INR', label: 'INR (₹)' },
   { code: 'USD', label: 'USD ($)' },
   { code: 'EUR', label: 'EUR (€)' },
   { code: 'GBP', label: 'GBP (£)' },
   { code: 'CAD', label: 'CAD ($)' },
 ];
 
-const BUDGET_PRESETS = [100, 200, 250, 400];
+const COUNTRIES = ['India', 'United States', 'United Kingdom', 'Canada', 'European Union', 'Other'];
 
 export const OnboardingView: React.FC<OnboardingViewProps> = ({
   initialCurrency = 'USD',
+  initialCountry = 'United States',
   initialBudgetCap = 250,
   initialWorkspaceName = 'Personal',
   initialUserName = '',
@@ -68,7 +74,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
   const [userName, setUserName] = useState(initialUserName);
   const [workspaceName, setWorkspaceName] = useState(initialWorkspaceName);
   const [currency, setCurrency] = useState<CurrencyCode>(initialCurrency);
-  const [country, setCountry] = useState('United States');
+  const [country, setCountry] = useState(initialCountry);
   const [timezone] = useState(
     () =>
       (typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone) ||
@@ -80,7 +86,34 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
   const [emailFallbackEnabled, setEmailFallbackEnabled] = useState(true);
   const [pushStatusMsg, setPushStatusMsg] = useState<string | null>(null);
 
+  const budgetPresets = currency === 'INR' ? [1500, 3000, 5000, 10000] : [100, 200, 250, 400];
+
+  const handleSelectCurrency = (nextCurrency: CurrencyCode) => {
+    setCurrency(nextCurrency);
+    if (nextCurrency === 'INR' && monthlyBudgetCap < 500) {
+      setMonthlyBudgetCap(5000);
+    } else if (nextCurrency !== 'INR' && monthlyBudgetCap >= 1000) {
+      setMonthlyBudgetCap(250);
+    }
+  };
+
+  const handleSelectCountry = (nextCountry: string) => {
+    setCountry(nextCountry);
+    if (nextCountry === 'India') {
+      handleSelectCurrency('INR');
+    } else if (nextCountry === 'United States') {
+      handleSelectCurrency('USD');
+    } else if (nextCountry === 'United Kingdom') {
+      handleSelectCurrency('GBP');
+    } else if (nextCountry === 'Canada') {
+      handleSelectCurrency('CAD');
+    } else if (nextCountry === 'European Union') {
+      handleSelectCurrency('EUR');
+    }
+  };
+
   const toggleService = (name: string) => {
+    triggerHaptic(8);
     setSelectedNames((prev) =>
       prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
     );
@@ -110,7 +143,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
   const handleFinish = () => {
     const selectedServices = POPULAR_SERVICES.filter((svc) =>
       selectedNames.includes(svc.name)
-    ).map(({ name, category, price }) => ({ name, category, price }));
+    ).map(({ name, category, price, inrPrice }) => ({
+      name,
+      category,
+      price: currency === 'INR' ? inrPrice : price,
+    }));
 
     onCompleteSetup({
       userName: userName.trim() || 'Alex Morgan',
@@ -174,7 +211,16 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
       </header>
 
       {/* Main Step Content */}
-      <main className="flex flex-col gap-gutter-lg my-auto py-gutter-lg">
+      <main className="flex flex-col gap-gutter-lg my-auto py-gutter-lg overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -18 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col gap-gutter-lg"
+          >
         {step === 1 && (
           <section className="flex flex-col gap-gutter-lg">
             <div className="flex flex-col gap-gutter-xs">
@@ -222,13 +268,13 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                 <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
                   Base currency
                 </span>
-                <div className="grid grid-cols-2 gap-gutter-xs">
+                <div className="grid grid-cols-3 gap-gutter-xs">
                   {CURRENCIES.map((c) => (
                     <button
                       key={c.code}
                       type="button"
-                      onClick={() => setCurrency(c.code)}
-                      className={`min-h-[44px] px-3 rounded-md border font-label text-label-sm transition-colors ${
+                      onClick={() => handleSelectCurrency(c.code)}
+                      className={`min-h-[44px] px-2.5 rounded-md border font-label text-label-sm transition-colors ${
                         currency === c.code
                           ? 'bg-light-primary dark:bg-dark-primary text-light-on-primary dark:text-dark-on-primary border-transparent'
                           : 'bg-light-surface-container-low dark:bg-dark-surface-container-low border-light-outline-variant dark:border-dark-outline-variant'
@@ -245,13 +291,18 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                   <label htmlFor="setup-country" className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
                     Country
                   </label>
-                  <input
+                  <select
                     id="setup-country"
-                    type="text"
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => handleSelectCountry(e.target.value)}
                     className="w-full min-h-[44px] px-3 py-2 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant font-body text-body-md"
-                  />
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
@@ -269,11 +320,11 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                     Monthly budget cap
                   </span>
                   <span className="font-mono text-mono-md text-light-primary dark:text-dark-primary font-semibold">
-                    {currency} {monthlyBudgetCap}
+                    {currency} {monthlyBudgetCap.toLocaleString(currency === 'INR' ? 'en-IN' : 'en-US')}
                   </span>
                 </div>
                 <div className="grid grid-cols-4 gap-gutter-xs">
-                  {BUDGET_PRESETS.map((preset) => (
+                  {budgetPresets.map((preset) => (
                     <button
                       key={preset}
                       type="button"
@@ -284,7 +335,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                           : 'border-light-outline-variant dark:border-dark-outline-variant bg-light-surface-container-low dark:bg-dark-surface-container-low'
                       }`}
                     >
-                      {preset}
+                      {preset.toLocaleString(currency === 'INR' ? 'en-IN' : 'en-US')}
                     </button>
                   ))}
                 </div>
@@ -311,11 +362,14 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
               {POPULAR_SERVICES.map((svc) => {
                 const isSelected = selectedNames.includes(svc.name);
                 return (
-                  <button
+                  <motion.button
                     key={svc.name}
                     type="button"
+                    whileHover={{ y: -2 }}
+                    whileTap={{ scale: 0.96 }}
+                    transition={SPRING_SNAPPY}
                     onClick={() => toggleService(svc.name)}
-                    className={`min-h-[60px] px-3.5 py-2.5 rounded-lg bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border flex items-center justify-between gap-2 text-left transition-colors ${
+                    className={`sp-card min-h-[60px] px-3.5 py-2.5 rounded-lg bg-light-surface-container-lowest dark:bg-dark-surface-container-lowest border flex items-center justify-between gap-2 text-left transition-colors ${
                       isSelected
                         ? 'border-light-primary dark:border-dark-primary shadow-sm'
                         : 'border-light-outline-variant dark:border-dark-outline-variant'
@@ -326,7 +380,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                         {svc.name}
                       </span>
                       <span className="font-mono text-mono-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-                        ~{svc.price}/mo
+                        ~{currency === 'INR' ? `₹${svc.inrPrice}` : svc.price}/mo
                       </span>
                     </div>
                     <span
@@ -339,7 +393,7 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
                     >
                       {isSelected ? 'check_circle' : 'add_circle'}
                     </span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -453,6 +507,8 @@ export const OnboardingView: React.FC<OnboardingViewProps> = ({
             </div>
           </section>
         )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Primary Setup CTA */}

@@ -166,6 +166,7 @@ export const EditSubscriptionView: React.FC<EditSubscriptionViewProps> = ({
                   className="w-full min-h-[44px] px-3.5 py-2.5 rounded-DEFAULT bg-light-surface-container-low dark:bg-dark-surface-container-low border border-light-outline-variant dark:border-dark-outline-variant text-light-on-surface dark:text-dark-on-surface font-body text-title-md focus:border-light-primary focus:outline-none focus:ring-1 focus:ring-light-primary"
                 >
                   <option value="USD">USD ($)</option>
+                  <option value="INR">INR (₹)</option>
                   <option value="EUR">EUR (€)</option>
                   <option value="GBP">GBP (£)</option>
                   <option value="CAD">CAD ($)</option>
