@@ -127,4 +127,6 @@ export interface SubPulseStore {
   hasCompletedOnboarding: boolean;
   isSignedIn: boolean;
   isGuestMode: boolean;
+  cloudUserId?: string;
+  workspaceId?: string;
 }

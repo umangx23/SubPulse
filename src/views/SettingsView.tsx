@@ -8,6 +8,8 @@ interface SettingsViewProps {
   settings: AppSettings;
   subscriptions: Subscription[];
   memberCount: number;
+  isCloudSynced?: boolean;
+  onSyncNow?: () => void;
   onNavigate: (view: AppView) => void;
   onUpdateSettings: (patch: Partial<AppSettings>) => void;
   onLogOut: () => void;
@@ -19,6 +21,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   settings,
   subscriptions,
   memberCount,
+  isCloudSynced = false,
+  onSyncNow,
   onNavigate,
   onUpdateSettings,
   onLogOut,
@@ -104,10 +108,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               Settings
             </span>
             <span className="font-label text-label-sm text-light-on-surface-variant dark:text-dark-on-surface-variant">
-              IndexedDB · Synced
+              {isCloudSynced ? 'Supabase Cloud · Synced' : 'IndexedDB · Local-only'}
             </span>
           </div>
         </div>
+        {isCloudSynced && onSyncNow && (
+          <button
+            type="button"
+            onClick={onSyncNow}
+            className="min-h-[36px] px-3 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm"
+          >
+            Sync
+          </button>
+        )}
       </header>
 
       {/* DESKTOP HEADER */}
@@ -117,9 +130,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             Settings &amp; security
           </h1>
           <p className="font-body text-body-md text-light-on-surface-variant dark:text-dark-on-surface-variant">
-            Account security, appearance, currency, and local backups
+            {isCloudSynced
+              ? 'Supabase cloud sync active · Cross-device backup enabled'
+              : 'Local-only IndexedDB mode · Sign in to enable cloud sync'}
           </p>
         </div>
+        {isCloudSynced && onSyncNow && (
+          <button
+            type="button"
+            onClick={onSyncNow}
+            className="sp-btn min-h-[40px] px-4 rounded-md bg-light-surface-container-low dark:bg-dark-surface-container-low text-light-primary dark:text-dark-primary font-label text-label-sm inline-flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">sync</span>
+            <span>Sync now</span>
+          </button>
+        )}
       </header>
 
       <main className="px-page-margin lg:px-gutter-xl flex flex-col gap-gutter-lg flex-1 max-w-2xl lg:max-w-3xl w-full mx-auto lg:mx-0">

@@ -3,7 +3,18 @@ import { Shell } from './components/Shell';
 import { DEMO_STORE, INITIAL_STORE } from './data/seedData';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { clearSubPulseStore, loadSubPulseStore, saveSubPulseStore } from './lib/db';
+import {
+  fetchCloudState,
+  registerCurrentDevice,
+  signOutCloud,
+  subscribeToWorkspaceChanges,
+  syncLocalSubscriptionsToCloud,
+  syncProfileSettings,
+  syncSubscriptionArchive,
+  syncSubscriptionUpsert,
+} from './lib/cloudSync';
 import { computeInitials } from './lib/formatters';
+import { supabase } from './lib/supabase';
 import {
   AppSettings,
   AppView,
@@ -42,19 +53,67 @@ export default function App() {
 
   const isOnline = useOnlineStatus();
 
-  // Hydrate from IndexedDB on startup
+  const hydrateCloudForUser = useCallback(async (userId: string) => {
+    await registerCurrentDevice(userId);
+    setStore((prev) => {
+      void fetchCloudState(userId, prev).then(async (cloud) => {
+        if (!cloud) return;
+        const shouldUploadLocal =
+          cloud.workspaceId &&
+          (cloud.subscriptions?.length ?? 0) === 0 &&
+          prev.subscriptions.length > 0;
+
+        if (shouldUploadLocal && cloud.workspaceId) {
+          await syncLocalSubscriptionsToCloud(cloud.workspaceId, userId, prev.subscriptions);
+          await syncProfileSettings(userId, prev.settings, prev.hasCompletedOnboarding);
+        }
+
+        setStore((latest) => ({
+          ...latest,
+          ...cloud,
+          subscriptions: shouldUploadLocal ? latest.subscriptions : (cloud.subscriptions ?? latest.subscriptions),
+          settings: {
+            ...cloud.settings!,
+            geminiApiKey: latest.settings.geminiApiKey, // keep BYOK strictly local
+            aiFeaturesEnabled: latest.settings.aiFeaturesEnabled,
+          },
+        }));
+      });
+      return { ...prev, cloudUserId: userId, isSignedIn: true, isGuestMode: false };
+    });
+  }, []);
+
+  // Hydrate from IndexedDB on startup + restore Supabase session if present
   useEffect(() => {
     let active = true;
     loadSubPulseStore().then((loaded) => {
-      if (active) {
-        setStore(loaded);
-        setIsHydrating(false);
+      if (!active) return;
+      setStore(loaded);
+      setIsHydrating(false);
+
+      if (supabase) {
+        supabase.auth.getSession().then(({ data }) => {
+          if (active && data.session?.user) {
+            void hydrateCloudForUser(data.session.user.id);
+          }
+        });
       }
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [hydrateCloudForUser]);
+
+  // Subscribe to Supabase Realtime for cross-device sync
+  useEffect(() => {
+    if (!store.workspaceId || !store.cloudUserId || !isOnline) return;
+    const unsubscribe = subscribeToWorkspaceChanges(store.workspaceId, () => {
+      if (store.cloudUserId) {
+        void hydrateCloudForUser(store.cloudUserId);
+      }
+    });
+    return unsubscribe;
+  }, [store.workspaceId, store.cloudUserId, isOnline, hydrateCloudForUser]);
 
   // Persist to IndexedDB whenever store changes after initial hydration
   useEffect(() => {
@@ -127,6 +186,9 @@ export default function App() {
         const nextSubs = isNew
           ? [sub, ...prev.subscriptions]
           : prev.subscriptions.map((s) => (s.id === sub.id ? sub : s));
+        if (prev.workspaceId && prev.cloudUserId) {
+          void syncSubscriptionUpsert(prev.workspaceId, prev.cloudUserId, sub);
+        }
         return { ...prev, subscriptions: nextSubs };
       });
       setSelectedSubId(sub.id);
@@ -144,12 +206,16 @@ export default function App() {
       const nextStatus: SubscriptionStatus =
         previousStatus === 'paused' || previousStatus === 'cancelled' ? 'active' : 'paused';
 
-      setStore((prev) => ({
-        ...prev,
-        subscriptions: prev.subscriptions.map((s) =>
-          s.id === id ? { ...s, status: nextStatus } : s
-        ),
-      }));
+      setStore((prev) => {
+        const updated = { ...target, status: nextStatus };
+        if (prev.workspaceId && prev.cloudUserId) {
+          void syncSubscriptionUpsert(prev.workspaceId, prev.cloudUserId, updated);
+        }
+        return {
+          ...prev,
+          subscriptions: prev.subscriptions.map((s) => (s.id === id ? updated : s)),
+        };
+      });
 
       showToast(
         nextStatus === 'paused' ? `Paused "${target.name}"` : `Resumed "${target.name}"`,
@@ -173,17 +239,23 @@ export default function App() {
       const previousStatus = target.status;
       const annualSaved = target.cycle === 'yearly' ? target.price : target.price * 12;
 
-      setStore((prev) => ({
-        ...prev,
-        subscriptions: prev.subscriptions.map((s) =>
-          s.id === id ? { ...s, status: 'cancelled' } : s
-        ),
-        settings: {
+      setStore((prev) => {
+        const updated: Subscription = { ...target, status: 'cancelled' };
+        const nextSettings = {
           ...prev.settings,
           savedYtd: Number((prev.settings.savedYtd + annualSaved).toFixed(2)),
           cancelledCountYtd: prev.settings.cancelledCountYtd + 1,
-        },
-      }));
+        };
+        if (prev.workspaceId && prev.cloudUserId) {
+          void syncSubscriptionUpsert(prev.workspaceId, prev.cloudUserId, updated);
+          void syncProfileSettings(prev.cloudUserId, nextSettings, prev.hasCompletedOnboarding);
+        }
+        return {
+          ...prev,
+          subscriptions: prev.subscriptions.map((s) => (s.id === id ? updated : s)),
+          settings: nextSettings,
+        };
+      });
 
       showToast(`Cancelled "${target.name}"`, () => {
         setStore((prev) => ({
@@ -207,10 +279,15 @@ export default function App() {
       const target = store.subscriptions.find((s) => s.id === id);
       if (!target) return;
 
-      setStore((prev) => ({
-        ...prev,
-        subscriptions: prev.subscriptions.filter((s) => s.id !== id),
-      }));
+      setStore((prev) => {
+        if (prev.workspaceId && prev.cloudUserId) {
+          void syncSubscriptionArchive(id);
+        }
+        return {
+          ...prev,
+          subscriptions: prev.subscriptions.filter((s) => s.id !== id),
+        };
+      });
       setCurrentView('subscriptions');
 
       showToast(`Archived "${target.name}"`, () => {
@@ -246,20 +323,31 @@ export default function App() {
         notes: item.notes || 'Imported from CSV',
       }));
 
-      setStore((prev) => ({
-        ...prev,
-        subscriptions: [...created, ...prev.subscriptions],
-      }));
+      setStore((prev) => {
+        if (prev.workspaceId && prev.cloudUserId) {
+          void syncLocalSubscriptionsToCloud(prev.workspaceId, prev.cloudUserId, created);
+        }
+        return {
+          ...prev,
+          subscriptions: [...created, ...prev.subscriptions],
+        };
+      });
       showToast(`Imported ${created.length} ${created.length === 1 ? 'subscription' : 'subscriptions'}`);
     },
     [store.settings.currency, showToast]
   );
 
   const handleUpdateSettings = useCallback((patch: Partial<AppSettings>) => {
-    setStore((prev) => ({
-      ...prev,
-      settings: { ...prev.settings, ...patch },
-    }));
+    setStore((prev) => {
+      const nextSettings = { ...prev.settings, ...patch };
+      if (prev.cloudUserId) {
+        void syncProfileSettings(prev.cloudUserId, nextSettings, prev.hasCompletedOnboarding);
+      }
+      return {
+        ...prev,
+        settings: nextSettings,
+      };
+    });
   }, []);
 
   const handleToggleTheme = useCallback(() => {
@@ -291,6 +379,7 @@ export default function App() {
   }, [showToast]);
 
   const handleResetAllData = useCallback(async () => {
+    await signOutCloud();
     await clearSubPulseStore();
     setStore(structuredClone(INITIAL_STORE));
     setSelectedSubId(null);
@@ -404,17 +493,28 @@ export default function App() {
     return (
       <SignInView
         defaultEmail={store.settings.userEmail}
+        defaultName={store.settings.userName === 'Guest' ? '' : store.settings.userName}
         onBackToIntro={() => setCurrentView('intro')}
-        onSignIn={(email, guestMode) => {
+        onSignIn={(email, guestMode, cloudUserId) => {
           setStore((prev) => ({
             ...prev,
             isSignedIn: true,
             isGuestMode: guestMode,
+            cloudUserId: cloudUserId || prev.cloudUserId,
             hasCompletedOnboarding: true,
             settings: { ...prev.settings, userEmail: email },
           }));
+          if (cloudUserId && !guestMode) {
+            void hydrateCloudForUser(cloudUserId);
+          }
           setCurrentView('dashboard');
-          showToast(guestMode ? 'Signed in (local-only guest mode)' : `Signed in as ${email}`);
+          showToast(
+            guestMode
+              ? 'Signed in (local-only guest mode)'
+              : cloudUserId
+              ? `Synced as ${email}`
+              : `Signed in as ${email}`
+          );
         }}
       />
     );
@@ -570,10 +670,23 @@ export default function App() {
           settings={store.settings}
           subscriptions={store.subscriptions}
           memberCount={store.members.length}
+          isCloudSynced={Boolean(store.cloudUserId && !store.isGuestMode)}
+          onSyncNow={() => {
+            if (store.cloudUserId) {
+              void hydrateCloudForUser(store.cloudUserId);
+              showToast('Cloud sync refreshed');
+            }
+          }}
           onNavigate={navigate}
           onUpdateSettings={handleUpdateSettings}
           onLogOut={() => {
-            setStore((prev) => ({ ...prev, isSignedIn: false }));
+            void signOutCloud();
+            setStore((prev) => ({
+              ...prev,
+              isSignedIn: false,
+              cloudUserId: undefined,
+              workspaceId: undefined,
+            }));
             setCurrentView('signin');
           }}
           onResetAllData={handleResetAllData}
